@@ -4,7 +4,7 @@ Personal guides that keep only the main story and the legendaries, without optio
 
 | Game | Status |
 |---|---|
-| Black 2 & White 2 | ✅ Part 10 → post-game legendaries |
+| Black 2 & White 2 | ✅ Parts 1–15 + post-game legendaries |
 | X & Y | planned |
 | Omega Ruby & Alpha Sapphire | planned |
 | Sun & Moon | planned |

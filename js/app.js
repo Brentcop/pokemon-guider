@@ -74,11 +74,13 @@
 
   // ---------- rendering ----------
   function renderMon([name, lvl, types, item]) {
-    // "$slot" entries come from the starter choice (e.g. the rival's starter)
+    // "$slot" entries come from the starter choice (e.g. the rival's starter).
+    // An explicit item overrides the slot's; "-" means no held item.
     if (name.startsWith("$") && G.starter) {
       const slot = G.starter.slots[S.starter]?.[name.slice(1)];
-      if (slot) [name, types, item] = slot;
+      if (slot) { const own = item; [name, types, item] = slot; if (own) item = own; }
     }
+    if (item === "-") item = "";
     name = V(name); types = V(types);
     const src = sprite(name.split(" / ")[0]);
     return `<div class="mon">${src ? `<img src="${src}" alt="" loading="lazy">` : ""}

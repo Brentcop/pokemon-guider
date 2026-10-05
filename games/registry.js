@@ -12,7 +12,7 @@ window.GAMES = [
   {
     id: "b2w2", status: "ready", gen: 5, region: "Unova",
     title: "Black 2 & White 2",
-    blurb: "Part 10 → Champion, then every catchable legendary.",
+    blurb: "Full story (Parts 1–15), then every catchable legendary.",
     colors: ["#1b1f27", "#33c3f0", "#e8462f"],
   },
   {

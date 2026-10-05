@@ -13,7 +13,8 @@
      • Step types: story · boss · legend · key · prep · heal · tip
        (tip = optional, hidden unless "Show extras" is on)
      • Team entries: ["Name", level, "Type1/Type2", "Held item"?]
-       Use "$slot" as the name to pull from starter.slots (e.g. the rival).
+       Use "$slot" as the name to pull from starter.slots (e.g. the rival);
+       a 4th value overrides the slot's held item ("-" = none).
      • Pokémon names must exist in assets/dex.js (name → National Dex #),
        and a sprite must exist at `${sprites}/<dex>.png` (+ .gif for legendaries).
    ========================================================================= */

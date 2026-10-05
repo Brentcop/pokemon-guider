@@ -1,6 +1,6 @@
 /* =========================================================================
    Pokémon Black 2 / White 2 — Streamlined Route (Part 10 → Legendaries)
-   Story content condensed from Bulbapedia's B2W2 walkthrough (Parts 10–22).
+   Story content condensed from Bulbapedia's B2W2 walkthrough (Parts 1–22).
    Maps from mewmaps.org. Personal reference only.
 
    Step types:
@@ -19,6 +19,20 @@
 
 // Region-map pin coordinates (percent of map width/height)
 const PINS = {
+  "Route 19": [10.0, 80.1],
+  "Floccesy Town": [16.5, 78.5],
+  "Floccesy Ranch": [14.6, 65.5],
+  "Virbank City": [28.3, 72.6],
+  "Route 4": [54.0, 72.0],
+  "Desert Resort": [44.6, 65.6],
+  "Join Avenue": [51.0, 66.0],
+  "Nimbasa City": [53.3, 62.4],
+  "Route 5": [45.0, 61.4],
+  "Driftveil Drawbridge": [35.8, 60.4],
+  "Pokémon World Tournament": [26.7, 66.6],
+  "Route 6": [17.5, 56.2],
+  "Mistralton Cave": [22.9, 50.5],
+  "Chargestone Cave": [18.8, 48.4],
   "Mistralton City": [20.0, 43.7],
   "Route 7": [20.4, 38.5],
   "Celestial Tower": [15.4, 29.5],
@@ -158,6 +172,220 @@ const NOT_IN_GAME = [
    Chapters & steps
 --------------------------------------------------------------------------- */
 const CHAPTERS = [
+  /* ============================ PART 1 ============================ */
+  {
+    id: "p1", part: "Part 1", title: "A Starter & a Rival",
+    areas: "Aspertia City · Route 19 · Floccesy Town",
+    steps: [
+      { id: "p1-home", type: "story", loc: "Aspertia City", title: "Leave home and meet Hugh",
+        text: "Mom says Professor Juniper's assistant Bianca is looking for you. Outside, your rival <b>Hugh</b> offers to help find her." },
+      { id: "p1-starter", type: "story", loc: "Aspertia City", title: "Aspertia Outlook: pick your starter from Bianca",
+        text: "Climb the stairs on the north side of the city. Bianca asks you to help with the Pokédex, then lets you pick <b>Snivy, Tepig, or Oshawott</b>.",
+        callout: "Set the <b>Starter</b> picker at the top of this page to match. Hugh's teams depend on it." },
+      { id: "p1-hugh", type: "boss", loc: "Aspertia City", title: "Rival battle: Hugh at the Outlook",
+        boss: { who: "Rival Hugh", rival: true, team: [["$base", 5]],
+          use: "An even fight. Just attack. Losing costs you nothing.", reward: "" } },
+      { id: "p1-center", type: "story", loc: "Aspertia City", title: "Pokémon Center tour, then head north",
+        text: "Bianca shows you the Pokémon Center and gives you <b>10 Poké Balls</b>. Outside, Mom gives you the <b>Running Shoes</b>, and Hugh's sister gives you a <b>Town Map</b> plus a spare one to deliver to Hugh. Go north through the gate." },
+      { id: "p1-route19", type: "story", loc: "Route 19", title: "Route 19: catching lesson, then follow Alder",
+        text: "Bianca shows you how to catch a Pokémon. Farther east, <b>Alder</b> jumps down from the cliff and leads you to Floccesy Town." },
+      { id: "p1-floccesy", type: "story", loc: "Floccesy Town", title: "Floccesy Town: Alder says Hugh went to Route 20",
+        text: "" },
+    ],
+  },
+
+  /* ============================ PART 2 ============================ */
+  {
+    id: "p2", part: "Part 2", title: "Floccesy Ranch & Cheren",
+    areas: "Route 20 · Floccesy Ranch · Pledge Grove · Aspertia Gym",
+    badge: "Basic Badge (#1)",
+    steps: [
+      { id: "p2-route20", type: "story", loc: "Route 20", title: "Route 20: cross the bridge and go north to Floccesy Ranch",
+        text: "A Hiker blocks the east stairs for now." },
+      { id: "p2-hugh", type: "boss", loc: "Floccesy Ranch", title: "Rival battle: Hugh at the ranch pastures",
+        boss: { who: "Rival Hugh", rival: true, team: [["$base", 8]],
+          use: "Still an even fight. Keep your starter healthy.", reward: "" } },
+      { id: "p2-herdier", type: "story", loc: "Floccesy Ranch", title: "Find the ranch owner's lost Herdier",
+        text: "Give Hugh the spare Town Map. Search the forest north of the pastures: go east, then south to a clearing, where a <b>Team Plasma Grunt</b> has Herdier cornered. The Grunt runs off." },
+      { id: "p2-alder", type: "boss", loc: "Floccesy Town", title: "Floccesy Town: battle Alder's two students",
+        text: "Back at Alder's house. Their Pokémon depend on your starter. Afterward, Mr. Medal gives you the Medal Box, and Alder says the Aspertia Gym has reopened." },
+      { id: "p2-pledge", type: "tip", loc: "Floccesy Town", title: "Pledge Grove (behind Alder's house): skip it",
+        text: "It only matters for Keldeo, which is event-only." },
+      { id: "p2-gym", type: "boss", loc: "Aspertia City", title: "Aspertia Gym: Cheren",
+        text: "Go through the Trainers' School and out the back door to the Gym.",
+        boss: { who: "Gym Leader Cheren", team: [["Patrat", 11, "Normal"], ["Lillipup", 13, "Normal"]],
+          use: "<b>Fighting</b>. A Riolu from Floccesy Ranch is great here. Both know Work Up, so KO them fast, or use Growl to cancel it.", reward: "Basic Badge + TM83 Work Up" } },
+      { id: "p2-after", type: "story", loc: "Route 20", title: "Head east over Route 20 to Virbank City",
+        text: "Outside the Gym, Bianca gives you TM27 Return and the C-Gear. In Floccesy she adds the Habitat List to your Pokédex. At the Route 20 stairs, Cheren gives you <b>Pecha Berries</b> (they cure poison) for the next Gym." },
+    ],
+  },
+
+  /* ============================ PART 3 ============================ */
+  {
+    id: "p3", part: "Part 3", title: "Roxie & Virbank City",
+    areas: "Virbank City · Virbank Complex · Virbank Gym · Pokéstar Studios",
+    badge: "Toxic Badge (#2)",
+    steps: [
+      { id: "p3-arrive", type: "story", loc: "Virbank City", title: "Virbank City: Roxie argues with her father",
+        text: "Near the Pokémon Center. Her dad runs the ferry to Castelia but quits to become an actor." },
+      { id: "p3-complex", type: "tip", loc: "Virbank City", title: "Virbank Complex: Magnemite + TM94 Rock Smash",
+        text: "Catch a <b>Magnemite</b> there. As a Steel type it can't be poisoned, which helps a lot at Roxie's Gym. Beat the three new Workers for Rock Smash." },
+      { id: "p3-gym", type: "boss", loc: "Virbank City", title: "Virbank Gym: Roxie",
+        text: "Beat Nicky and Billy Jo to stop the music, then challenge Roxie. Bring <b>Antidotes</b>.",
+        boss: { who: "Gym Leader Roxie", team: [["Koffing", 16, "Poison"], ["Whirlipede", 18, "Bug/Poison"]],
+          use: "Psychic or Ground. Fire and Flying also hit Whirlipede. Cure poison fast, because Venoshock hits poisoned targets twice as hard.", reward: "Toxic Badge + TM09 Venoshock" } },
+      { id: "p3-studios", type: "story", loc: "Virbank City", title: "Pokéstar Studios: watch Pop Roxie's movie and film one",
+        text: "A scout from the studio takes you north of town. Watch Roxie's dad's movie, then shoot a scene with Brycen." },
+      { id: "p3-pier", type: "boss", loc: "Virbank City", title: "Team Plasma at the Virbank pier",
+        text: "Roxie and Hugh are facing down Team Plasma. Talk to the Grunt in the middle. Afterward Roxie gives you <b>HM01 Cut</b>." },
+      { id: "p3-route20", type: "boss", loc: "Route 20", title: "Chase the last Grunt onto Route 20",
+        text: "Climb the center stairway on Route 20 and head south. She's hiding in a small clearing just off the path." },
+      { id: "p3-ship", type: "story", loc: "Virbank City", title: "Take the ferry to Castelia City with Hugh",
+        text: "Pop Roxie is back at work. Go into the pier building and board the ship with Hugh." },
+    ],
+  },
+
+  /* ============================ PART 4 ============================ */
+  {
+    id: "p4", part: "Part 4", title: "Burgh & Castelia City",
+    areas: "Castelia City · Castelia Sewers · Castelia Gym",
+    badge: "Insect Badge (#3)",
+    steps: [
+      { id: "p4-arrive", type: "story", loc: "Castelia City", title: "Castelia City: get the Bicycle on Oceanfront Road",
+        text: "Hugh registers you on his Xtransceiver. The Harlequin on Oceanfront Road gives you a <b>Bicycle</b>." },
+      { id: "p4-company", type: "tip", loc: "Castelia City", title: "Battle Company: Exp. Share, Quick and Timer Balls",
+        text: "The Janitor on 1F gives you an <b>Exp. Share</b>. Beat the Clerks on 47F for Quick Balls and 5 Timer Balls." },
+      { id: "p4-iris", type: "story", loc: "Castelia City", title: "Gym Street: Burgh is out, so follow Iris to the sewers",
+        text: "Iris leads you east along Oceanfront Road to <b>Thumb Pier</b>, where you go into the Castelia Sewers after Hugh." },
+      { id: "p4-hugh", type: "boss", loc: "Castelia City", title: "Rival battle: Hugh in the sewers",
+        boss: { who: "Rival Hugh", rival: true, team: [["$mid", 20], ["Pidove", 18, "Normal/Flying"]],
+          use: "Electric, Rock, or Ice for Pidove. For his starter, use whatever beats it.", reward: "" } },
+      { id: "p4-sewers", type: "story", loc: "Castelia City", title: "Sewers: tag battle two Grunts with Hugh",
+        text: "Hugh heals you after every battle while he tags along. At the end of the walkway, beat the two Grunts in a Double Battle. The route depends on the month (the water level changes): in <b>Jan, Feb, May, Jun, Sep, or Oct</b>, walk north over the water and turn left. In the other months, head west and climb the north stairs. Hugh gives you <b>HM04 Strength</b>. Burgh and Colress show up, then you head back out to the Gym." },
+      { id: "p4-gym", type: "boss", loc: "Castelia City", title: "Castelia Gym: Burgh",
+        text: "The cocoons teleport you, and which way you face when entering changes where you go. Beat Harlequin Gary, enter the east cocoon from its <b>right</b> side, beat Anders, then enter the next cocoon from its <b>left</b> side.",
+        boss: { who: "Gym Leader Burgh", team: [["Swadloon", 22, "Bug/Grass"], ["Dwebble", 22, "Bug/Rock"], ["Leavanny", 24, "Bug/Grass", "Sitrus Berry"]],
+          use: "<b>Fire or Flying</b> (4× on Swadloon and Leavanny). Use Water or Rock on Dwebble.", reward: "Insect Badge + TM76 Struggle Bug" } },
+      { id: "p4-colress", type: "story", loc: "Castelia City", title: "Central Plaza: Colress challenges you, then head north to Route 4",
+        text: "He'll wait for you on Route 4." },
+    ],
+  },
+
+  /* ============================ PART 5 ============================ */
+  {
+    id: "p5", part: "Part 5", title: "Route 4 & Join Avenue",
+    areas: "Route 4 · Desert Resort · Relic Castle · Join Avenue",
+    steps: [
+      { id: "p5-dowsing", type: "story", loc: "Route 4", title: "Castelia Gate: Bianca gives you the Dowsing MCHN",
+        text: "It finds hidden items nearby." },
+      { id: "p5-colress", type: "boss", loc: "Route 4", title: "Route 4: battle Colress",
+        text: "He wakes up the Crustle blocking the road, then battles you.",
+        boss: { who: "Colress", team: [["Magnemite", 21, "Electric/Steel"], ["Klink", 23, "Steel"]],
+          use: "<b>Ground</b> (4× on Magnemite), Fire, Fighting.", reward: "Protein" } },
+      { id: "p5-heal", type: "heal", loc: "Route 4", title: "Route 4 rest house: the woman inside heals you",
+        text: "{Go west along the new paved road.|It's the small building east of PokéFan Sachiko.}" },
+      { id: "p5-desert", type: "tip", loc: "Desert Resort", title: "Desert Resort & Relic Castle: optional",
+        text: "These are only for items. Nurse Mariah in the southeast of the desert heals you after you beat her. A <b>Sandile or Sandshrew</b> from here is great against Elesa's Gym." },
+      { id: "p5-join", type: "story", loc: "Join Avenue", title: "Join Avenue: become the manager, then go north to Nimbasa City",
+        text: "Join Avenue is north of Route 4. Accept the owner's request and pick your phrases. Then keep going north to Nimbasa City." },
+    ],
+  },
+
+  /* ============================ PART 6 ============================ */
+  {
+    id: "p6", part: "Part 6", title: "Elesa & Nimbasa City",
+    areas: "Nimbasa City · Nimbasa Gym · Anville Town · Route 16 · Lostlorn Forest",
+    badge: "Bolt Badge (#4)",
+    steps: [
+      { id: "p6-subway", type: "boss", loc: "Nimbasa City", title: "Tag battle vs. the Subway Bosses outside Gear Station",
+        text: "Talk to the Trainer in front of Ingo and Emmet. You team up with Rosa or Nate.",
+        boss: { who: "Ingo & Emmet (multi)", team: [["Gurdurr", 26, "Fighting"], ["Boldore", 26, "Rock"]],
+          use: "Psychic or Flying for Gurdurr. Water, Grass, or Fighting for Boldore.", reward: "Vs. Recorder" } },
+      { id: "p6-gym", type: "boss", loc: "Nimbasa City", title: "Nimbasa Gym (east of the Ferris wheel): Elesa",
+        boss: { who: "Gym Leader Elesa", team: [["Emolga", 28, "Electric/Flying"], ["Flaaffy", 28, "Electric"], ["Zebstrika", 30, "Electric", "Sitrus Berry"]],
+          use: "<b>Ground</b> for Flaaffy and Zebstrika. Emolga is immune to Ground, so use Rock or Ice on it. Sandile and Sandshrew are immune to her Electric moves.", reward: "Bolt Badge + TM72 Volt Switch" } },
+      { id: "p6-plasma", type: "boss", loc: "Nimbasa City", title: "Help Hugh against Team Plasma outside Big Stadium",
+        text: "Afterward Hugh explains that Team Plasma stole his little sister's Purrloin. He heals your party, then runs off." },
+      { id: "p6-side", type: "tip", loc: "Nimbasa City", title: "Anville Town, Route 16, Lostlorn Forest: optional",
+        text: "Side areas only. The Marvelous Bridge elevator on Route 16 stays broken until after the Hall of Fame." },
+      { id: "p6-west", type: "story", loc: "Route 5", title: "Head west out of Nimbasa onto Route 5", text: "" },
+    ],
+  },
+
+  /* ============================ PART 7 ============================ */
+  {
+    id: "p7", part: "Part 7", title: "Clay & Driftveil City",
+    areas: "Route 5 · Driftveil Drawbridge · Driftveil City · Driftveil Gym",
+    badge: "Quake Badge (#5)",
+    steps: [
+      { id: "p7-fly", type: "story", loc: "Route 5", title: "Route 5: Bianca gives you HM02 Fly",
+        text: "She also shows you a <b>Hidden Grotto</b>, which has a Minccino with its Hidden Ability." },
+      { id: "p7-charles", type: "boss", loc: "Route 5", title: "Motorcyclist Charles blocks the drawbridge",
+        text: "It's a {Rotation|Triple} Battle, so check your party order first.",
+        boss: { who: "Motorcyclist Charles", team: [["Sigilyph", 26, "Psychic/Flying"], ["Archen", 26, "Rock/Flying"], ["Tirtouga", 26, "Water/Rock"]],
+          use: "<b>Electric</b> hits all three. Grass is 4× on Tirtouga.", reward: "" } },
+      { id: "p7-city", type: "story", loc: "Driftveil Drawbridge", title: "Cross the Driftveil Drawbridge into Driftveil City",
+        text: "A former Plasma member is arguing with a current one. He invites you to their old base on the hill <b>west of the Gym</b>." },
+      { id: "p7-rood", type: "boss", loc: "Driftveil City", title: "Former Plasma base: battle Rood",
+        text: "Afterward he explains the old Team Plasma's change of heart and gives you a <b>Zorua</b> that once traveled with N.",
+        boss: { who: "Rood", team: [["Herdier", 27, "Normal"], ["Swoobat", 27, "Psychic/Flying"]],
+          use: "Fighting for Herdier. Electric, Rock, or Ice for Swoobat.", reward: "" } },
+      { id: "p7-tutor", type: "tip", loc: "Driftveil City", title: "Move Tutor (pays in Red Shards): Ice Punch or Seed Bomb",
+        text: "He's in the house next to the Chateau Hotel. Both moves are good against Clay." },
+      { id: "p7-gym", type: "boss", loc: "Driftveil City", title: "Driftveil Gym: Clay",
+        text: "Ride the conveyor belts through the dark mine to Clay in the northeast.",
+        boss: { who: "Gym Leader Clay", team: [["Krokorok", 31, "Ground/Dark"], ["Sandslash", 31, "Ground"], ["Excadrill", 33, "Ground/Steel", "Sitrus Berry"]],
+          use: "<b>Water</b> hits all three. Grass works on Krokorok and Sandslash, and Fighting on Krokorok and Excadrill. Bulldoze lowers your Speed.", reward: "Quake Badge + TM78 Bulldoze" } },
+      { id: "p7-pwt", type: "story", loc: "Pokémon World Tournament", title: "Follow Hugh south to the Pokémon World Tournament", text: "" },
+    ],
+  },
+
+  /* ============================ PART 8 ============================ */
+  {
+    id: "p8", part: "Part 8", title: "World Tournament & the Plasma Frigate",
+    areas: "Pokémon World Tournament · Plasma Frigate · Relic Passage",
+    steps: [
+      { id: "p8-register", type: "story", loc: "Pokémon World Tournament", title: "Register for the Driftveil Tournament",
+        text: "You can't use items during the tournament, so give your Pokémon <b>held items before registering</b>. You need three wins in a row." },
+      { id: "p8-hugh", type: "boss", loc: "Pokémon World Tournament", title: "Round 1: Hugh",
+        boss: { who: "Rival Hugh", rival: true, team: [["$mid", 25, "", "-"], ["$monkey", 25, "", "-"], ["Tranquill", 25, "Normal/Flying"]],
+          use: "Electric, Rock, or Ice for Tranquill. For the other two, use whatever beats his starter.", reward: "" } },
+      { id: "p8-cheren", type: "boss", loc: "Pokémon World Tournament", title: "Round 2: Cheren",
+        boss: { who: "Cheren", team: [["Stoutland", 25, "Normal"], ["Cinccino", 25, "Normal"], ["Watchog", 25, "Normal"]],
+          use: "<b>Fighting</b>.", reward: "" } },
+      { id: "p8-colress", type: "boss", loc: "Pokémon World Tournament", title: "Final: Colress",
+        boss: { who: "Colress", team: [["Magneton", 25, "Electric/Steel"], ["Elgyem", 25, "Psychic"], ["Klink", 25, "Steel"]],
+          use: "Ground (4× on Magneton) and Fire. Use Dark, Bug, or Ghost on Elgyem.", reward: "1 BP" } },
+      { id: "p8-frigate", type: "story", loc: "Pokémon World Tournament", title: "Storm the Plasma Frigate at the pier with Hugh and Cheren",
+        text: "Team Plasma walks past outside. <b>Heal up</b>, then follow Hugh south to the pier. Beat the first two Grunts on your own, then tag-battle the rest with Cheren and then Hugh. Zinzolin shows up, and the Shadow Triad teleports you off the ship. Cheren heads for Route 6." },
+      { id: "p8-relic", type: "tip", loc: "Pokémon World Tournament", title: "Relic Passage & Relic Castle: optional",
+        text: "These are only for items and shards. Volcarona at the bottom of Relic Castle is strong but not a legendary." },
+    ],
+  },
+
+  /* ============================ PART 9 ============================ */
+  {
+    id: "p9", part: "Part 9", title: "Route 6 & Chargestone Cave",
+    areas: "Route 6 · Mistralton Cave · Chargestone Cave",
+    steps: [
+      { id: "p9-surf", type: "story", loc: "Route 6", title: "Route 6: Cheren gives you HM03 Surf",
+        text: "Go west from Driftveil. Cheren is outside the Season Research Lab." },
+      { id: "p9-cobalion", type: "story", loc: "Route 6", title: "Westernmost bridge: Cobalion appears, then runs off",
+        text: "Rood shows up and says it would be a great ally.",
+        callout: "You can catch <b>Cobalion</b> on Route 13 in Part 12." },
+      { id: "p9-heal", type: "heal", loc: "Route 6", title: "The woman in the house east of the bridge heals you", text: "" },
+      { id: "p9-mcave", type: "tip", loc: "Mistralton Cave", title: "Mistralton Cave: optional (TM80 Rock Slide)",
+        text: "Surf east along the river. You need Flash and Strength. An old man inside tells the story of the Swords of Justice." },
+      { id: "p9-chargestone", type: "story", loc: "Chargestone Cave", title: "Chargestone Cave: push the floating stones",
+        text: "Head north on Route 6. The floating stones stick to the blue boulders when pushed." +
+          "<ol><li><b>1F:</b> Bianca explains the stones. Push the first one <b>left</b> and the next one <b>right</b>, keep east, then go south across the bridge. Beat Ace Trainer Corky (Triple Battle) and take the stairs down.</li>" +
+          "<li><b>B1F:</b> Go west, then north. Doctor Kit heals you after you beat him. Weave around the blue boulders to Bianca, then take the <b>west</b> stairs down.</li>" +
+          "<li><b>B2F:</b> Go south past Guitarist Beverly, then take the stairs back up.</li>" +
+          "<li><b>B1F:</b> Go east past Bianca and up the stairs.</li>" +
+          "<li><b>1F:</b> Go south, then east to the exit into <b>Mistralton City</b>. You've reached Part 10.</li></ol>" },
+    ],
+  },
+
   /* ============================ PART 10 ============================ */
   {
     id: "p10", part: "Part 10", title: "Skyla & the Celestial Tower",
@@ -469,7 +697,7 @@ const CHAPTERS = [
 window.GAME = {
   id: "b2w2",
   title: "B2W2 Legendary Route",
-  tagline: "Story path from Part 10 to every catchable legendary",
+  tagline: "Main story from Part 1 to every catchable legendary",
   // First entry = text before "|" in {a|b} placeholders, second = after.
   versions: [
     { id: "b2", label: "Black 2", mode: "dark",  accent: "#33c3f0", accent2: "#1b8fd1", ink: "#04121a" },
@@ -485,9 +713,9 @@ window.GAME = {
     options: [["snivy", "Snivy"], ["tepig", "Tepig"], ["oshawott", "Oshawott"]],
     // Fills "$ace" / "$monkey" in rival teams: [name, types, held item]
     slots: {
-      snivy:    { ace: ["Emboar", "Fire/Fighting", "Charcoal"],  monkey: ["Simipour", "Water", "Mystic Water"] },
-      tepig:    { ace: ["Samurott", "Water", "Mystic Water"],    monkey: ["Simisage", "Grass", "Miracle Seed"] },
-      oshawott: { ace: ["Serperior", "Grass", "Miracle Seed"],   monkey: ["Simisear", "Fire", "Charcoal"] },
+      snivy:    { base: ["Tepig", "Fire"],      mid: ["Pignite", "Fire/Fighting", "Charcoal"], ace: ["Emboar", "Fire/Fighting", "Charcoal"],  monkey: ["Simipour", "Water", "Mystic Water"] },
+      tepig:    { base: ["Oshawott", "Water"],  mid: ["Dewott", "Water", "Mystic Water"],      ace: ["Samurott", "Water", "Mystic Water"],    monkey: ["Simisage", "Grass", "Miracle Seed"] },
+      oshawott: { base: ["Snivy", "Grass"],     mid: ["Servine", "Grass", "Miracle Seed"],     ace: ["Serperior", "Grass", "Miracle Seed"],   monkey: ["Simisear", "Fire", "Charcoal"] },
     },
   },
   legends: LEGENDS,
