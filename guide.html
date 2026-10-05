@@ -24,6 +24,7 @@
     <label class="tog"><input type="checkbox" id="extras"> Show extras</label>
     <label class="tog"><input type="checkbox" id="hideDone"> Hide done</label>
     <button class="btn" id="regionBtn" title="Open the full region map">🗺 Region map</button>
+    <button class="btn sync-btn" id="syncBtn" title="Sync progress across devices" data-state="off"><span class="dot"></span>☁ Sync</button>
   </div>
   <div class="progress"><div class="bar" id="bar"></div></div>
 </header>
@@ -52,6 +53,38 @@
   </div>
 </div>
 
+<dialog class="sync-dlg" id="syncDlg">
+  <div class="sd-head"><h2>☁ Sync &amp; backup</h2><button class="btn" id="syncClose">✕</button></div>
+  <p class="sd-note">Progress for <b>all games</b> is saved together.</p>
+
+  <section class="sd-sec">
+    <h3>Cloud sync <span class="sd-state" id="syncState" data-state="off"></span></h3>
+    <div id="syncConnect">
+      <p>Saves your progress to a <b>private GitHub Gist</b> and keeps every connected device up to date.</p>
+      <ol>
+        <li><a href="https://github.com/settings/tokens/new?scopes=gist&amp;description=Pokemon%20Route%20Guides%20sync" target="_blank" rel="noopener">Create a GitHub token ↗</a>. Only the <b>gist</b> box should be checked (it's pre-checked). Pick an expiration you're happy with, or <b>No expiration</b>.</li>
+        <li>Click <b>Generate token</b>, copy it, and paste it below. Do this once on each device.</li>
+      </ol>
+      <div class="sd-row"><input id="tokenIn" type="password" placeholder="ghp_…" autocomplete="off" spellcheck="false"><button class="btn primary" id="tokenSave">Connect</button></div>
+      <p class="sd-fine">The token stays in this browser and is only sent to GitHub. It can only read and write your gists.</p>
+    </div>
+    <div id="syncConnected" hidden>
+      <p>This device is connected. Changes sync a few seconds after you make them, and again whenever you come back to the page.</p>
+      <div class="sd-row"><button class="btn primary" id="syncNow">Sync now</button><button class="btn" id="syncOff">Disconnect this device</button></div>
+    </div>
+  </section>
+
+  <section class="sd-sec">
+    <h3>Backup code</h3>
+    <p>Copy your progress as a code or a link. Opening the link, or importing the code, on another device loads it there.</p>
+    <textarea id="codeOut" readonly rows="3" spellcheck="false"></textarea>
+    <div class="sd-row"><button class="btn" id="codeCopy">Copy code</button><button class="btn" id="linkCopy">Copy link</button></div>
+    <h4>Import</h4>
+    <textarea id="codeIn" rows="3" placeholder="Paste a backup code" spellcheck="false"></textarea>
+    <div class="sd-row"><button class="btn" id="codeImport">Import (replaces this device's progress)</button></div>
+  </section>
+</dialog>
+
 <footer class="foot" id="foot"></footer>
 
 <script src="games/registry.js"></script>
@@ -65,7 +98,7 @@
     const load = (src) => new Promise((ok, fail) => {
       const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = fail; document.body.appendChild(s);
     });
-    load(`games/${id}/data.js`).then(() => load("js/app.js"))
+    load(`games/${id}/data.js`).then(() => load("js/sync.js")).then(() => load("js/app.js"))
       .catch(() => { document.getElementById("main").textContent = `Couldn't load games/${id}/data.js`; });
   })();
 </script>

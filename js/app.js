@@ -23,18 +23,23 @@
   }
   try { localStorage.setItem("pg.lastGame", G.id); } catch {}
 
-  const S = {
-    ver: store.get("ver", G.versions[0].id),
-    starter: store.get("starter", G.starter?.options[0][0]),
-    extras: store.get("extras", false),
-    hideDone: store.get("hideDone", false),
-    done: new Set(store.get("done", [])),
-    caught: new Set(store.get("caught", [])),
-  };
-  if (!G.versions.some((v) => v.id === S.ver)) S.ver = G.versions[0].id;
+  const S = {};
+  function loadState() {
+    Object.assign(S, {
+      ver: store.get("ver", G.versions[0].id),
+      starter: store.get("starter", G.starter?.options[0][0]),
+      extras: store.get("extras", false),
+      hideDone: store.get("hideDone", false),
+      done: new Set(store.get("done", [])),
+      caught: new Set(store.get("caught", [])),
+    });
+    if (!G.versions.some((v) => v.id === S.ver)) S.ver = G.versions[0].id;
+  }
+  loadState();
   const save = () => {
     store.set("ver", S.ver); store.set("starter", S.starter); store.set("extras", S.extras);
     store.set("hideDone", S.hideDone); store.set("done", [...S.done]); store.set("caught", [...S.caught]);
+    window.Sync?.touch();
   };
 
   const TYPE_COLORS = {
@@ -368,6 +373,49 @@
     const next = G.chapters.flatMap((c) => c.steps).find((s) => !S.done.has(s.id) && (S.extras || s.type !== "tip"));
     if (next) flashTo(next.id);
   };
+
+  // ---------- sync panel (cloud via GitHub Gist + backup codes) ----------
+  const syncDlg = $("#syncDlg");
+  const STATUS_TEXT = { off: "Not connected", pending: "Changes waiting…", syncing: "Syncing…", ok: "Synced", error: "Sync error" };
+  function paintSync(state, msg) {
+    $("#syncBtn").dataset.state = state;
+    $("#syncState").textContent = msg || STATUS_TEXT[state] || "";
+    $("#syncState").dataset.state = state;
+    $("#syncConnect").hidden = Sync.connected;
+    $("#syncConnected").hidden = !Sync.connected;
+  }
+  Sync.onStatus(paintSync);
+  Sync.onRemoteChange(() => { loadState(); renderAll(); });
+  $("#syncBtn").onclick = () => { $("#codeOut").value = Sync.exportCode(); $("#codeIn").value = ""; syncDlg.showModal(); };
+  $("#syncClose").onclick = () => syncDlg.close();
+  syncDlg.addEventListener("click", (e) => { if (e.target === syncDlg) syncDlg.close(); });
+  $("#tokenSave").onclick = async () => {
+    const t = $("#tokenIn").value;
+    if (!t.trim()) return;
+    try { await Sync.connect(t); $("#tokenIn").value = ""; } catch {}
+  };
+  $("#syncNow").onclick = () => Sync.syncNow();
+  $("#syncOff").onclick = () => { if (confirm("Stop syncing on this device? Your progress stays here and in the Gist.")) Sync.disconnect(); };
+  const copy = async (text, btn) => {
+    try { await navigator.clipboard.writeText(text); } catch { $("#codeOut").select(); document.execCommand("copy"); }
+    const t = btn.textContent; btn.textContent = "Copied!"; setTimeout(() => (btn.textContent = t), 1500);
+  };
+  $("#codeCopy").onclick = (e) => copy($("#codeOut").value, e.target);
+  $("#linkCopy").onclick = (e) => copy(`${location.origin}${location.pathname}?game=${G.id}#import=${$("#codeOut").value}`, e.target);
+  const doImport = (code) => {
+    try { Sync.importCode(code); if (syncDlg.open) syncDlg.close(); return true; }
+    catch { alert("That code doesn't look right. Make sure you copied all of it."); return false; }
+  };
+  $("#codeImport").onclick = () => {
+    const code = $("#codeIn").value.trim();
+    if (code && confirm("Replace the progress on this device with the imported progress (all games)?")) doImport(code);
+  };
+  // Opening a backup link: guide.html?game=…#import=<code>
+  if (location.hash.startsWith("#import=")) {
+    const code = location.hash.slice(8);
+    history.replaceState(null, "", location.pathname + location.search);
+    if (confirm("Load the progress from this link? It replaces the progress on this device (all games).")) doImport(code);
+  }
 
   renderChrome();
   renderAll();
