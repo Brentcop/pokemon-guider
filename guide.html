@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Route Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-mode="dark">
+<header class="topbar">
+  <div class="brand">
+    <a class="ball" href="index.html" title="All guides" aria-label="All guides"></a>
+    <div>
+      <h1 id="gTitle">Route Guide</h1>
+      <p class="sub" id="gTagline"></p>
+    </div>
+  </div>
+  <div class="controls">
+    <div class="seg" role="group" aria-label="Game version" id="verSeg"></div>
+    <label class="sel" id="starterWrap" hidden><span id="starterLabel">Starter</span>
+      <select id="starter"></select>
+    </label>
+    <label class="tog"><input type="checkbox" id="extras"> Show extras</label>
+    <label class="tog"><input type="checkbox" id="hideDone"> Hide done</label>
+    <button class="btn" id="regionBtn" title="Open the full region map">🗺 Region map</button>
+  </div>
+  <div class="progress"><div class="bar" id="bar"></div></div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar" id="nav"></nav>
+  <main id="main"></main>
+  <aside class="tracker" id="tracker"></aside>
+</div>
+
+<button class="fab" id="nextBtn" title="Jump to your next unchecked step">▶ Next step</button>
+
+<div class="lightbox" id="lightbox" hidden>
+  <div class="lb-bar">
+    <span id="lbTitle"></span>
+    <span class="lb-hint">Scroll/pinch to zoom · drag to pan</span>
+    <button class="btn" id="lbFit">Fit</button>
+    <a class="btn" id="lbOpen" target="_blank">Open full image ↗</a>
+    <button class="btn" id="lbClose">✕</button>
+  </div>
+  <div class="lb-stage" id="lbStage">
+    <div class="lb-inner" id="lbInner">
+      <img id="lbImg" alt="">
+      <div class="lb-pin" id="lbPin" hidden><span></span></div>
+    </div>
+  </div>
+</div>
+
+<footer class="foot" id="foot"></footer>
+
+<script src="games/registry.js"></script>
+<script src="assets/dex.js"></script>
+<script>
+  // Load the requested game module, then the shared renderer.
+  (() => {
+    const id = new URLSearchParams(location.search).get("game") || "b2w2";
+    const entry = GAMES.find((g) => g.id === id && g.status === "ready");
+    if (!entry) { location.replace("index.html"); return; }
+    const load = (src) => new Promise((ok, fail) => {
+      const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = fail; document.body.appendChild(s);
+    });
+    load(`games/${id}/data.js`).then(() => load("js/app.js"))
+      .catch(() => { document.getElementById("main").textContent = `Couldn't load games/${id}/data.js`; });
+  })();
+</script>
+</body>
+</html>

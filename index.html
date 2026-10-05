@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pokémon Route Guides</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="hub" data-mode="dark">
+<header class="hub-head">
+  <span class="ball" aria-hidden="true"></span>
+  <h1>Pokémon Route Guides</h1>
+  <p class="sub">Main story and legendaries only, without the clutter.</p>
+</header>
+<main class="hub-grid" id="grid"></main>
+<script src="games/registry.js"></script>
+<script>
+  // Remember the last guide opened so the home page can highlight it.
+  let last = null;
+  try { last = localStorage.getItem("pg.lastGame"); } catch {}
+  document.getElementById("grid").innerHTML = GAMES.map((g) => {
+    const ready = g.status === "ready";
+    const tag = ready ? (g.id === last ? "Continue" : "Open") : "Coming soon";
+    const inner = `
+      <div class="hub-art" style="background:linear-gradient(135deg, ${g.colors[1]}, ${g.colors[2]})">
+        <span>Gen ${g.gen} · ${g.region}</span>
+      </div>
+      <div class="hub-body">
+        <h2>${g.title}</h2>
+        ${g.playing ? `<p class="hub-play">Playing: ${g.playing}</p>` : ""}
+        <p>${g.blurb}</p>
+        <span class="hub-tag ${ready ? "on" : ""}">${tag}</span>
+      </div>`;
+    return ready
+      ? `<a class="hub-card" href="guide.html?game=${g.id}">${inner}</a>`
+      : `<div class="hub-card soon">${inner}</div>`;
+  }).join("");
+</script>
+</body>
+</html>
