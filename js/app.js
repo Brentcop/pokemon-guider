@@ -115,7 +115,7 @@
 
   function renderStep(st) {
     const done = S.done.has(st.id);
-    const mapBtn = st.map ? `<button class="btn mapbtn" data-map="${st.map}"><img src="${mapSrc(G.maps[st.map])}" alt="" loading="lazy">${G.maps[st.map].name} map</button>` : "";
+    const mapBtn = st.map ? `<button class="btn mapbtn" data-map="${st.id}"><img src="${mapSrc(G.maps[st.map])}" alt="" loading="lazy" referrerpolicy="no-referrer">🗺 ${G.maps[st.map].name} map</button>` : "";
     const pinBtn = G.pins[st.loc] ? `<button class="btn" data-mini="${esc(st.loc)}">📍 Where is this?</button>` : "";
     return `<article class="step ${done ? "done" : ""}" id="${st.id}" data-type="${st.type}">
       <button class="check" data-step="${st.id}" aria-label="Mark done">✓</button>
@@ -162,17 +162,24 @@
     $("#main").innerHTML = html;
   }
 
+  const chapterGroup = (ch) => ch.group || (ch.postgame ? "Post-game" : "Main story");
+  const requiredSteps = (ch) => ch.steps.filter((s) => s.type !== "tip");
+
   function renderNav() {
-    let html = `<div class="nav-group">Main story</div>`;
-    let pg = false;
+    let html = "", group = null;
     for (const ch of G.chapters) {
-      if (ch.postgame && !pg) { html += `<div class="nav-group">Post-game</div>`; pg = true; }
-      const req = ch.steps.filter((s) => s.type !== "tip");
+      if (chapterGroup(ch) !== group) { group = chapterGroup(ch); html += `<div class="nav-group">${group}</div>`; }
+      const req = requiredSteps(ch);
       const d = req.filter((s) => S.done.has(s.id)).length;
       const stars = ch.steps.filter((s) => s.type === "legend").length;
-      html += `<a class="nav-item ${d === req.length ? "complete" : ""}" href="#${ch.id}" data-ch="${ch.id}">
-        <span class="np">${ch.part}</span><span class="nt">${V(ch.title)}</span>
-        <span class="nc">${d}/${req.length} steps${stars ? ` · <span class="stars">${"★".repeat(stars)}</span>` : ""}</span></a>`;
+      const full = d === req.length;
+      html += `<div class="nav-item ${full ? "complete" : ""}" data-ch="${ch.id}">
+        <button class="pcheck" data-part="${ch.id}" title="${full ? "Uncheck" : "Check off"} all of ${esc(ch.part)}" aria-label="Check off ${esc(ch.part)}">✓</button>
+        <a class="nav-link" href="#${ch.id}">
+          <span class="np">${ch.part}</span><span class="nt">${V(ch.title)}</span>
+          <span class="na">${V(ch.areas)}</span>
+          <span class="nc">${d}/${req.length} steps${stars ? ` · <span class="stars">${"★".repeat(stars)}</span>` : ""}</span>
+        </a></div>`;
     }
     html += `<div class="key">${Object.entries(TYPE_LABEL).map(([k, v]) =>
       `<span class="tag" style="background:var(--t-${k});${k === "legend" ? "color:#2a1d00" : ""}">${v}</span>`).join("")}</div>`;
@@ -240,25 +247,49 @@
     renderMain(); renderNav(); renderTracker(); updateProgress(); observeChapters();
   }
 
-  // ---------- mini region map ----------
+  // ---------- inline maps (region pin + location maps), shown inside a step ----------
   const regionSrc = (full) => mapSrc(G.regionMaps[S.ver], full);
-  function toggleMini(btn) {
+  const pinFor = (p) => (!p ? null : Array.isArray(p) ? p : p[S.ver] || null);
+
+  // Crop `src` around pin [x%, y%] at `scale`× the box width; no pin → show the whole image.
+  function inlineMap(slot, key, { src, full, pin, caption, title, scale = 3.2 }) {
+    if (slot.dataset.key === key) { slot.innerHTML = ""; slot.dataset.key = ""; return; }
+    slot.dataset.key = key;
+    slot.innerHTML = `<div class="minimap ${pin ? "" : "fit"}"><img src="${src}" alt="" referrerpolicy="no-referrer">
+      ${pin ? `<div class="pin"><span></span></div>` : ""}<div class="cap">${esc(caption)}</div><div class="zoom">⤢ Tap to zoom</div></div>`;
+    const mm = slot.firstChild, img = mm.querySelector("img");
+    if (pin) {
+      const place = () => {
+        if (!img.naturalWidth) return;
+        const cw = mm.clientWidth, chh = mm.clientHeight;
+        const iw = cw * scale, ih = iw * (img.naturalHeight / img.naturalWidth);
+        img.style.width = iw + "px";
+        img.style.left = cw / 2 - (pin[0] / 100) * iw + "px"; img.style.top = chh / 2 - (pin[1] / 100) * ih + "px";
+      };
+      img.complete ? place() : img.addEventListener("load", place);
+    }
+    mm.addEventListener("click", () => openLightbox(full, title, pin));
+  }
+
+  function toggleRegion(btn) {
     const step = btn.closest(".step");
     if (step.classList.contains("done") || !G.regionMaps) return;
-    const slot = step.querySelector(".mini-slot");
-    if (slot.innerHTML) { slot.innerHTML = ""; return; }
-    const loc = btn.dataset.mini; const [x, y] = G.pins[loc];
-    slot.innerHTML = `<div class="minimap"><img src="${regionSrc()}" alt="" referrerpolicy="no-referrer"><div class="pin"><span></span></div><div class="cap">${esc(loc)} (approx.)</div></div>`;
-    const mm = slot.firstChild, img = mm.querySelector("img");
-    const place = () => {
-      if (!img.naturalWidth) return;
-      const cw = mm.clientWidth, chh = mm.clientHeight, scale = 3.2;
-      const iw = cw * scale, ih = iw * (img.naturalHeight / img.naturalWidth);
-      img.style.width = iw + "px";
-      img.style.left = cw / 2 - (x / 100) * iw + "px"; img.style.top = chh / 2 - (y / 100) * ih + "px";
-    };
-    img.complete ? place() : img.addEventListener("load", place);
-    mm.addEventListener("click", () => openLightbox(regionSrc(true), `${loc} · ${G.regionName || "Region"}`, [x, y]));
+    const loc = btn.dataset.mini;
+    inlineMap(step.querySelector(".mini-slot"), "region:" + loc, {
+      src: regionSrc(), full: regionSrc(true), pin: G.pins[loc],
+      caption: `${loc} (approx.)`, title: `${loc} · ${G.regionName || "Region"}`,
+    });
+  }
+
+  function toggleLocationMap(btn) {
+    const step = btn.closest(".step");
+    const st = G.chapters.flatMap((c) => c.steps).find((x) => x.id === btn.dataset.map);
+    const m = G.maps[st.map], pin = pinFor(st.mapPin);
+    inlineMap(step.querySelector(".mini-slot"), "map:" + st.id, {
+      src: mapSrc(m), full: mapSrc(m, true), pin, scale: 2.4,
+      caption: pin && st.mapLabel ? `${m.name}: ${V(st.mapLabel)}` : m.name,
+      title: pin && st.mapLabel ? `${m.name} · ${V(st.mapLabel)}` : m.name,
+    });
   }
 
   // ---------- lightbox with pan / wheel-zoom / pinch-zoom ----------
@@ -343,7 +374,7 @@
 
   // ---------- events ----------
   document.addEventListener("click", (e) => {
-    const t = e.target.closest("[data-step],[data-catch],[data-map],[data-mini],[data-goto],[data-ver]");
+    const t = e.target.closest("[data-step],[data-catch],[data-map],[data-mini],[data-goto],[data-ver],[data-part]");
     if (!t) return;
     if (t.dataset.ver) { S.ver = t.dataset.ver; save(); renderAll(); return; }
     if (t.dataset.catch) {
@@ -361,8 +392,16 @@
       document.getElementById(id).classList.toggle("done", S.done.has(id));
       renderNav(); updateProgress(); observeChapters(); return;
     }
-    if (t.dataset.map) { openLightbox(mapSrc(G.maps[t.dataset.map], true), G.maps[t.dataset.map].name); return; }
-    if (t.dataset.mini) { toggleMini(t); return; }
+    if (t.dataset.part) {
+      e.preventDefault();
+      const ch = G.chapters.find((c) => c.id === t.dataset.part), req = requiredSteps(ch);
+      const allDone = req.every((x) => S.done.has(x.id));
+      if (allDone && !confirm(`Uncheck every step in ${ch.part}?`)) return;
+      req.forEach((x) => (allDone ? S.done.delete(x.id) : S.done.add(x.id)));
+      save(); renderAll(); return;
+    }
+    if (t.dataset.map) { toggleLocationMap(t); return; }
+    if (t.dataset.mini) { toggleRegion(t); return; }
     if (t.dataset.goto) { flashTo(t.dataset.goto); return; }
   });
   $("#starter").onchange = (e) => { S.starter = e.target.value; save(); renderAll(); };

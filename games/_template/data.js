@@ -60,6 +60,8 @@ const CHAPTERS = [
         text: "Short, direct instruction. <b>HTML</b> allowed.",
         callout: "",      // optional ★ highlight box
         map: "",          // optional key into MAPS
+        mapPin: null,     // optional [x%, y%] on that map, or { v1: [x, y], v2: [x, y] } per version
+        mapLabel: "",     // caption for the pin
       },
       // { id: "ch1-gym", type: "boss", loc: "Town", title: "Gym: Leader",
       //   boss: { who: "Gym Leader X", rival: false, team: [["Pokémon", 12, "Bug"]], use: "Fire, Flying, Rock.", reward: "Badge + TM" },
