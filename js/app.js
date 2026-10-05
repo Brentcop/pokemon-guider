@@ -32,6 +32,7 @@
       hideDone: store.get("hideDone", false),
       done: new Set(store.get("done", [])),
       caught: new Set(store.get("caught", [])),
+      collapsed: new Set(store.get("collapsed", [])),
     });
     if (!G.versions.some((v) => v.id === S.ver)) S.ver = G.versions[0].id;
   }
@@ -39,6 +40,7 @@
   const save = () => {
     store.set("ver", S.ver); store.set("starter", S.starter); store.set("extras", S.extras);
     store.set("hideDone", S.hideDone); store.set("done", [...S.done]); store.set("caught", [...S.caught]);
+    store.set("collapsed", [...S.collapsed]);
     window.Sync?.touch();
   };
 
@@ -71,6 +73,24 @@
   const mapSrc = (m, full) => m.drive
     ? `https://lh3.googleusercontent.com/d/${m.drive}=${full ? "s0" : "w1600"}`
     : `${BASE}maps/${full ? "" : "sm/"}${m.file}`;
+
+  // ---------- walkthrough links (e.g. Bulbapedia) ----------
+  const WT = G.walkthrough;
+  const wtUrl = (part, anchor) => WT.base + part + (anchor ? "#" + encodeURI(anchor) : "");
+  const refUrl = (ref) => { const [part, anchor] = V(ref).split("#"); return wtUrl(part, anchor); };
+  // Hide sections that belong to the other version, e.g. "Route 4 (White 2)" while on Black 2.
+  const otherLabels = () => G.versions.filter((v) => v.id !== S.ver).map((v) => `(${v.label})`);
+  function moreLinks(ch) {
+    if (!WT?.sections || !ch.refs) return "";
+    const skip = otherLabels();
+    const groups = ch.refs.map((p) => {
+      const secs = (WT.sections[p] || []).filter(([label]) => !skip.some((x) => label.includes(x)));
+      return `<div class="more-group"><a class="more-part" href="${wtUrl(p)}" target="_blank" rel="noopener">${WT.partLabel(p)} ↗</a>
+        ${secs.map(([label, a]) => `<a href="${wtUrl(p, a)}" target="_blank" rel="noopener">${esc(label)}</a>`).join("")}</div>`;
+    }).join("");
+    const n = ch.refs.reduce((t, p) => t + (WT.sections[p] || []).length, 0);
+    return `<details class="more"><summary>📖 More on ${WT.label}: side content, items &amp; full text (${n} sections)</summary>${groups}</details>`;
+  }
 
   // ---------- rendering ----------
   function renderMon([name, lvl, types, item]) {
@@ -131,7 +151,7 @@
           ${renderBoss(st.boss)}
           ${st.after ? `<div class="after">${V(st.after)}</div>` : ""}
           ${st.callout ? `<div class="callout">${V(st.callout)}</div>` : ""}
-          ${mapBtn || pinBtn ? `<div class="s-actions">${mapBtn}${pinBtn}</div>` : ""}
+          <div class="s-actions">${mapBtn}${pinBtn}${st.ref && WT ? `<a class="btn wt" href="${refUrl(st.ref)}" target="_blank" rel="noopener" title="Read this section on ${WT.label}">📖 ${WT.label} ↗</a>` : ""}</div>
           <div class="mini-slot"></div>
         </div>
       </div>
@@ -147,9 +167,11 @@
         shownPostBanner = true;
       }
       const legs = ch.steps.filter((s) => s.type === "legend").map((s) => legendById(V(s.legend))?.name).filter(Boolean);
-      html += `<section class="chapter" id="${ch.id}">
+      const req = requiredSteps(ch), nDone = req.filter((s) => S.done.has(s.id)).length;
+      html += `<section class="chapter ${S.collapsed.has(ch.id) ? "collapsed" : ""}" id="${ch.id}">
         <div class="ch-head">
-          <div class="ch-part">${ch.part}</div>
+          <button class="ch-toggle" data-collapse="${ch.id}" aria-expanded="${!S.collapsed.has(ch.id)}" title="Collapse / expand (C)">▾</button>
+          <div class="ch-part">${ch.part} <span class="ch-count">${nDone}/${req.length}</span></div>
           <h2>${V(ch.title)}</h2>
           <div class="ch-areas">${V(ch.areas)}</div>
           <div class="ch-meta">
@@ -157,6 +179,7 @@
             ${legs.map((n) => `<span class="chip">★ ${n}</span>`).join("")}
           </div>
           ${ch.intro ? `<p class="ch-intro">${V(ch.intro)}</p>` : ""}
+          ${moreLinks(ch)}
         </div>
         ${ch.steps.map(renderStep).join("")}
       </section>`;
@@ -198,8 +221,10 @@
       ${l.other && l.native && l.native !== S.ver ? `<div class="tw">⚠ ${l.other}</div>` : ""}</div>
       <button class="tc" data-catch="${l.id}" title="Toggle caught">✓</button></div>`;
     const story = list.filter((l) => l.phase === "story"), post = list.filter((l) => l.phase === "post");
+    $("#dexCount").textContent = `${n}/${list.length}`;
     $("#tracker").innerHTML = `
       <div class="panel">
+        <button class="btn drawer-close" data-drawer="close" aria-label="Close">✕</button>
         <h3>Legendary Dex</h3>
         <div class="count">${n}<small> / ${list.length} catchable in ${verLabel()}</small></div>
         <div class="dexbar"><div style="width:${list.length ? (n / list.length) * 100 : 0}%"></div></div>
@@ -369,6 +394,8 @@
 
   function flashTo(id) {
     const el = document.getElementById(id); if (!el) return;
+    const sec = el.closest(".chapter");
+    if (sec?.classList.contains("collapsed")) { S.collapsed.delete(sec.id); save(); sec.classList.remove("collapsed"); }
     if (el.classList.contains("done") && S.hideDone) { S.hideDone = false; save(); renderAll(); return flashTo(id); }
     el.scrollIntoView({ behavior: "smooth", block: "start" });
     el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
@@ -376,8 +403,10 @@
 
   // ---------- events ----------
   document.addEventListener("click", (e) => {
-    const t = e.target.closest("[data-step],[data-catch],[data-map],[data-mini],[data-goto],[data-ver],[data-part]");
+    const t = e.target.closest("[data-step],[data-catch],[data-map],[data-mini],[data-goto],[data-ver],[data-part],[data-collapse],[data-drawer]");
     if (!t) return;
+    if (t.dataset.collapse) { toggleCollapse(t.dataset.collapse); return; }
+    if (t.dataset.drawer) { setDrawer(false); return; }
     if (t.dataset.ver) { S.ver = t.dataset.ver; save(); renderAll(); return; }
     if (t.dataset.catch) {
       e.stopPropagation();
@@ -391,7 +420,10 @@
       const id = t.dataset.step;
       S.done.has(id) ? S.done.delete(id) : S.done.add(id);
       save();
-      document.getElementById(id).classList.toggle("done", S.done.has(id));
+      const el = document.getElementById(id);
+      el.classList.toggle("done", S.done.has(id));
+      const ch = G.chapters.find((c) => c.steps.some((x) => x.id === id)), req = requiredSteps(ch);
+      el.closest(".chapter").querySelector(".ch-count").textContent = `${req.filter((x) => S.done.has(x.id)).length}/${req.length}`;
       renderNav(); updateProgress(); observeChapters(); return;
     }
     if (t.dataset.part) {
@@ -400,11 +432,12 @@
       const allDone = req.every((x) => S.done.has(x.id));
       if (allDone && !confirm(`Uncheck every step in ${ch.part}?`)) return;
       req.forEach((x) => (allDone ? S.done.delete(x.id) : S.done.add(x.id)));
+      allDone ? S.collapsed.delete(ch.id) : S.collapsed.add(ch.id); // finished parts fold up
       save(); renderAll(); return;
     }
     if (t.dataset.map) { toggleLocationMap(t); return; }
     if (t.dataset.mini) { toggleRegion(t); return; }
-    if (t.dataset.goto) { flashTo(t.dataset.goto); return; }
+    if (t.dataset.goto) { setDrawer(false); flashTo(t.dataset.goto); return; }
   });
   $("#starter").onchange = (e) => { S.starter = e.target.value; save(); renderAll(); };
   $("#extras").onchange = (e) => { S.extras = e.target.checked; save(); renderAll(); };
@@ -414,6 +447,80 @@
     const next = G.chapters.flatMap((c) => c.steps).find((s) => !S.done.has(s.id) && (S.extras || s.type !== "tip"));
     if (next) flashTo(next.id);
   };
+
+  // ---------- collapsible parts ----------
+  function toggleCollapse(id) {
+    S.collapsed.has(id) ? S.collapsed.delete(id) : S.collapsed.add(id);
+    save();
+    const sec = document.getElementById(id);
+    sec.classList.toggle("collapsed", S.collapsed.has(id));
+    sec.querySelector(".ch-toggle").setAttribute("aria-expanded", String(!S.collapsed.has(id)));
+  }
+
+  // ---------- Legendary Dex drawer (narrow screens) ----------
+  const drawerMQ = matchMedia("(max-width: 1180px)");
+  function setDrawer(open) {
+    if (!drawerMQ.matches) open = false;
+    $("#tracker").classList.toggle("open", open);
+    $("#drawerBackdrop").hidden = !open;
+    document.body.classList.toggle("drawer-open", open);
+  }
+  $("#dexBtn").onclick = () => setDrawer(!$("#tracker").classList.contains("open"));
+  $("#drawerBackdrop").onclick = () => setDrawer(false);
+  drawerMQ.addEventListener("change", () => setDrawer(false));
+
+  // ---------- keyboard shortcuts (desktop) ----------
+  const kbdDlg = $("#kbdDlg");
+  $("#kbdBtn").onclick = () => kbdDlg.showModal();
+  $("#kbdClose").onclick = () => kbdDlg.close();
+  kbdDlg.addEventListener("click", (e) => { if (e.target === kbdDlg) kbdDlg.close(); });
+  let focusId = null;
+  const visibleSteps = () => $$(".chapter:not(.collapsed) .step").filter((el) => el.offsetParent !== null);
+  function focusStep(el) {
+    if (!el) return;
+    $$(".step.kfocus").forEach((x) => x.classList.remove("kfocus"));
+    el.classList.add("kfocus"); focusId = el.id;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+  function currentStep() {
+    const el = focusId && document.getElementById(focusId);
+    if (el && el.offsetParent !== null) return el;
+    // otherwise: the first step visible near the top of the screen
+    return visibleSteps().find((x) => x.getBoundingClientRect().bottom > 140) || null;
+  }
+  function currentChapter() {
+    const st = currentStep();
+    if (st) return st.closest(".chapter");
+    return $$(".chapter").find((c) => c.getBoundingClientRect().bottom > 140);
+  }
+  document.addEventListener("keydown", (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.target.closest?.("input, textarea, select, [contenteditable]")) return;
+    if ($("dialog[open]")) return;
+    if (!lb.hidden) return;
+    const k = e.key;
+    if (k === "Escape") { setDrawer(false); $$(".step.kfocus").forEach((x) => x.classList.remove("kfocus")); focusId = null; return; }
+    if (k === "?") { kbdDlg.showModal(); e.preventDefault(); return; }
+    const steps = visibleSteps(), cur = currentStep(), i = cur ? steps.indexOf(cur) : -1;
+    switch (k.toLowerCase()) {
+      case "j": focusStep(focusId ? steps[Math.min(i + 1, steps.length - 1)] : cur); break;
+      case "k": focusStep(focusId ? steps[Math.max(i - 1, 0)] : cur); break;
+      case "x": case " ": if (cur) { cur.querySelector(".check").click(); focusId = cur.id; cur.classList.add("kfocus"); } break;
+      case "n": $("#nextBtn").click(); break;
+      case "m": cur?.querySelector("[data-map], .s-actions [data-mini]")?.click(); break;
+      case "b": { const a = cur?.querySelector("a.wt"); if (a) window.open(a.href, "_blank", "noopener"); break; }
+      case "c": { const ch = currentChapter(); if (ch) toggleCollapse(ch.id); break; }
+      case "]": case "[": {
+        const chs = $$(".chapter"), c = currentChapter(), j = chs.indexOf(c) + (k === "]" ? 1 : -1);
+        if (chs[j]) chs[j].scrollIntoView({ behavior: "smooth", block: "start" });
+        break;
+      }
+      case "d": setDrawer(!$("#tracker").classList.contains("open")); break;
+      case "r": $("#regionBtn").click(); break;
+      default: return;
+    }
+    e.preventDefault();
+  });
 
   // ---------- sync panel (cloud via GitHub Gist + backup codes) ----------
   const syncDlg = $("#syncDlg");

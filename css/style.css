@@ -89,8 +89,12 @@ b { font-weight: 650; }
 
 /* ---------- Layout ---------- */
 .layout {
-  display: grid; grid-template-columns: 230px minmax(0, 1fr) 300px; gap: 24px;
-  max-width: 1440px; margin: 0 auto; padding: 20px;
+  display: grid; grid-template-columns: 250px minmax(0, 1fr) 310px; gap: 24px;
+  max-width: 1500px; margin: 0 auto; padding: 20px 24px;
+}
+@media (min-width: 1600px) {
+  .layout { grid-template-columns: 280px minmax(0, 1fr) 340px; max-width: 1760px; gap: 32px; }
+  body { font-size: 15.5px; }
 }
 .sidebar, .tracker { position: sticky; top: 110px; align-self: start; max-height: calc(100vh - 130px); overflow: auto; }
 
@@ -121,6 +125,51 @@ b { font-weight: 650; }
 
 /* ---------- Chapter ---------- */
 .chapter { margin-bottom: 40px; }
+.chapter.collapsed { margin-bottom: 14px; }
+.chapter.collapsed > .step { display: none; }
+.chapter.collapsed .ch-head { margin-bottom: 0; padding-top: 12px; padding-bottom: 12px; }
+.chapter.collapsed .ch-areas, .chapter.collapsed .ch-meta, .chapter.collapsed .ch-intro, .chapter.collapsed .more { display: none; }
+.chapter.collapsed .ch-head h2 { font-size: 17px; margin: 4px 0 0; }
+.ch-toggle {
+  position: absolute; right: 14px; top: 14px; z-index: 1; width: 32px; height: 32px; border-radius: 8px;
+  border: 1px solid var(--line); background: var(--card); color: var(--text); cursor: pointer; font-size: 16px;
+  transition: transform .2s;
+}
+.ch-toggle:hover { border-color: var(--accent); }
+.chapter.collapsed .ch-toggle { transform: rotate(-90deg); }
+.ch-count { margin-left: 8px; color: var(--muted); font: 600 12px Inter, sans-serif; }
+.ch-head h2 { padding-right: 40px; }
+
+/* "More on Bulbapedia" */
+.more { margin-top: 12px; font-size: 13px; position: relative; }
+.more summary { cursor: pointer; color: var(--muted); font-weight: 600; list-style: none; }
+.more summary::-webkit-details-marker { display: none; }
+.more summary::before { content: "▸ "; }
+.more[open] summary::before { content: "▾ "; }
+.more summary:hover { color: var(--accent); }
+.more-group { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.more-group a {
+  font-size: 12px; padding: 3px 9px; border-radius: 999px; text-decoration: none;
+  background: var(--bg-2); border: 1px solid var(--line); color: var(--text);
+}
+.more-group a:hover { border-color: var(--accent); color: var(--accent); }
+.more-group a.more-part { font-weight: 700; background: color-mix(in srgb, var(--accent) 15%, var(--card)); }
+.btn.wt { color: var(--muted); }
+.btn.wt:hover { color: var(--accent); }
+
+/* keyboard focus on a step */
+.step.kfocus { box-shadow: 0 0 0 2px var(--accent); }
+.kbd-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+.kbd-table td { padding: 6px 4px; border-top: 1px solid var(--line); }
+.kbd-table td:first-child { white-space: nowrap; width: 40%; }
+kbd {
+  display: inline-block; min-width: 22px; padding: 1px 6px; border-radius: 5px; text-align: center;
+  font: 600 12px ui-monospace, Consolas, monospace; background: var(--bg-2); border: 1px solid var(--line); border-bottom-width: 2px;
+}
+.dex-btn { display: none; }
+.drawer-close { display: none; float: right; padding: 2px 8px; }
+.drawer-backdrop { position: fixed; inset: 0; z-index: 29; background: rgba(5,8,12,.55); }
+@media (pointer: coarse) { .kbd-btn { display: none; } }
 .ch-head {
   border-radius: 16px; padding: 18px 20px; margin-bottom: 14px;
   background: linear-gradient(135deg, var(--card) 0%, var(--card-2) 100%);
@@ -367,17 +416,30 @@ a.hub-card:hover { transform: translateY(-3px); border-color: var(--accent); }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1180px) {
-  .layout { grid-template-columns: 210px minmax(0, 1fr); }
-  .tracker { position: static; max-height: none; grid-column: 1 / -1; order: -1; }
-  .tracker { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
-  .tracker .panel { margin: 0; }
+  .layout { grid-template-columns: 230px minmax(0, 1fr); }
+  /* Legendary Dex becomes a slide-out drawer */
+  .dex-btn, .drawer-close { display: inline-block; }
+  .tracker {
+    position: fixed; top: 0; right: 0; bottom: 0; z-index: 30; width: min(380px, 92vw); max-height: none;
+    padding: 14px; background: var(--bg); border-left: 1px solid var(--line); box-shadow: -10px 0 30px rgba(0,0,0,.35);
+    transform: translateX(105%); transition: transform .25s ease; overflow-y: auto;
+  }
+  .tracker.open { transform: none; }
+  body.drawer-open { overflow: hidden; }
 }
 @media (max-width: 760px) {
   .layout { grid-template-columns: 1fr; padding: 12px 16px; }
+  /* one scrollable row of controls keeps the sticky header short */
+  .controls { flex-wrap: nowrap; overflow-x: auto; width: 100%; padding-bottom: 2px; scrollbar-width: none; }
+  .controls::-webkit-scrollbar { display: none; }
+  .controls > * { flex: none; }
+  .ch-head { padding: 14px 16px; }
+  .ch-head h2 { font-size: 19px; }
+  .s-actions .btn { font-size: 12.5px; }
   .sidebar { position: static; max-height: none; display: flex; overflow-x: auto; gap: 6px; }
   .sidebar .nav-group, .sidebar .key { display: none; }
   .nav-item { flex: none; width: 200px; }
   .topbar { padding: 10px 16px 14px; }
   .brand .sub { display: none; }
-  html { scroll-padding-top: 180px; }
+  html { scroll-padding-top: 130px; }
 }
