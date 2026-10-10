@@ -28,8 +28,10 @@ const PINS = {
 
 // Location maps: key → { name, drive: "<Google Drive id>" } to link a map hosted elsewhere,
 // or { name, file: "x.jpg" } for a map stored in maps/ (+ maps/sm/ preview).
+// Optional locs: ["Other place", …] — extra place names this map covers. Any step whose `loc` is the
+// map's name (or one of its locs) gets a button for it, and those names in step text become links to it.
 const MAPS = {
-  // "terminus-cave": { name: "Terminus Cave", drive: "1AbC…" },
+  // "terminus-cave": { name: "Terminus Cave", drive: "1AbC…", locs: ["Route 18 cave"] },
 };
 
 const LEGENDS = [
@@ -60,7 +62,7 @@ const CHAPTERS = [
       { id: "ch1-start", type: "story", loc: "Town", title: "Do the thing",
         text: "Short, direct instruction. <b>HTML</b> allowed.",
         callout: "",      // optional ★ highlight box
-        map: "",          // optional key into MAPS
+        map: "",          // optional key into MAPS, or a list of keys (the first one gets mapPin)
         mapPin: null,     // optional [x%, y%] on that map, or { v1: [x, y], v2: [x, y] } per version
         mapLabel: "",     // caption for the pin
       },

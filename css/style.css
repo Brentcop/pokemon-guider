@@ -253,32 +253,61 @@ body:not(.extras) .step[data-type="tip"] { display: none; }
 .mapbtn { display: inline-flex; align-items: center; gap: 8px; padding: 4px; padding-right: 12px; }
 .mapbtn img { width: 54px; height: 36px; object-fit: cover; border-radius: 5px; display: block; }
 
-/* mini region map */
+/* inline maps (region pin + location maps): drag to pan, zoom with buttons / wheel */
 .minimap {
-  position: relative; overflow: hidden; border-radius: 10px; margin-top: 10px; aspect-ratio: 16 / 6;
-  border: 1px solid var(--line); background: #0a2440; cursor: zoom-in;
+  position: relative; overflow: hidden; border-radius: 10px; margin-top: 10px; height: clamp(220px, 42vw, 380px);
+  border: 1px solid var(--line); background: #0a2440; cursor: grab; touch-action: pan-x pan-y; user-select: none;
 }
-.minimap img { position: absolute; max-width: none; user-select: none; pointer-events: none; }
-.minimap .pin, .lb-pin {
-  position: absolute; width: 0; height: 0;
+.minimap.fit { background: #000; }
+.minimap.drag, .lb-stage.drag { cursor: grabbing; }
+.minimap img, .lb-stage img {
+  position: absolute; left: 0; top: 0; max-width: none; transform-origin: 0 0;
+  user-select: none; -webkit-user-drag: none; pointer-events: none;
 }
-.minimap .pin { left: 50%; top: 50%; }
+.minimap:not(.ready) img { visibility: hidden; }
+.minimap:not(.ready)::before {
+  content: "Loading map…"; position: absolute; inset: 0; display: grid; place-items: center; color: #9ab; font-size: 13px;
+}
+/* The pin's tip sits exactly on its anchor point (rotated 22px box: tip is 26.5px below its top edge). */
+.minimap .pin, .lb-pin { position: absolute; width: 0; height: 0; pointer-events: none; z-index: 1; }
 .pin span, .lb-pin span {
-  position: absolute; left: -11px; top: -30px; width: 22px; height: 22px; border-radius: 50% 50% 50% 0;
+  position: absolute; left: -11px; top: -26.5px; width: 22px; height: 22px; border-radius: 50% 50% 50% 0;
   transform: rotate(-45deg); background: var(--t-boss); border: 3px solid #fff; box-shadow: 0 3px 10px rgba(0,0,0,.5);
   animation: bob 1.4s ease-in-out infinite;
 }
+.minimap .pin::after, .lb-pin::after { /* fixed dot marking the exact spot while the marker bobs */
+  content: ""; position: absolute; left: -4px; top: -4px; width: 8px; height: 8px; border-radius: 50%;
+  background: #fff; border: 2px solid var(--t-boss); box-shadow: 0 0 0 2px rgba(0,0,0,.45);
+}
 @keyframes bob { 50% { translate: 0 -4px; } }
-.minimap.fit { aspect-ratio: auto; background: #000; display: flex; justify-content: center; }
-.minimap.fit img { position: static; width: 100%; max-height: 520px; object-fit: contain; }
-.minimap .zoom {
-  position: absolute; right: 10px; bottom: 8px; font-size: 12px; font-weight: 700; color: #fff;
-  background: rgba(0,0,0,.6); padding: 2px 8px; border-radius: 6px;
-}
 .minimap .cap {
-  position: absolute; left: 10px; bottom: 8px; font-size: 12px; font-weight: 700; color: #fff;
-  background: rgba(0,0,0,.6); padding: 2px 8px; border-radius: 6px;
+  position: absolute; left: 10px; bottom: 8px; font-size: 12px; font-weight: 700; color: #fff; z-index: 2;
+  background: rgba(0,0,0,.6); padding: 2px 8px; border-radius: 6px; max-width: calc(100% - 190px);
 }
+.mm-tools { position: absolute; right: 8px; bottom: 8px; display: flex; gap: 4px; z-index: 2; }
+.mm-tools button {
+  width: 32px; height: 32px; border-radius: 7px; border: 1px solid rgba(255,255,255,.25); background: rgba(0,0,0,.65);
+  color: #fff; font: 700 17px/1 Inter, system-ui, sans-serif; cursor: pointer; display: grid; place-items: center;
+}
+.mm-tools button:hover { background: rgba(0,0,0,.85); border-color: var(--accent); }
+.mm-hint {
+  position: absolute; left: 50%; top: 8px; translate: -50% 0; z-index: 2; white-space: nowrap; max-width: calc(100% - 16px);
+  overflow: hidden; text-overflow: ellipsis; font-size: 11.5px; font-weight: 600; color: #fff;
+  background: rgba(0,0,0,.6); padding: 2px 8px; border-radius: 6px; pointer-events: none; transition: opacity .25s;
+}
+.mm-hint { opacity: 0; }
+.minimap.ready:hover .mm-hint { opacity: 1; }
+.minimap.engaged .mm-hint, .minimap.drag .mm-hint { opacity: 0; }
+@media (pointer: coarse) { .minimap .mm-hint { opacity: 1; } .minimap { cursor: zoom-in; } }
+
+/* place names linked inside step text */
+.xref {
+  font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer;
+  text-decoration: underline dotted color-mix(in srgb, var(--accent) 70%, transparent); text-underline-offset: 3px;
+}
+.xref::after { content: " 📍"; font-size: .78em; }
+.xref[data-kind="map"]::after { content: " 🗺"; }
+.xref:hover { color: var(--accent); }
 
 /* ---------- Boss panel ---------- */
 .boss { margin-top: 10px; background: var(--card-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
@@ -345,12 +374,11 @@ body:not(.extras) .step[data-type="tip"] { display: none; }
 .lb-bar { display: flex; align-items: center; gap: 10px; padding: 10px 14px; color: #fff; }
 .lb-bar #lbTitle { font-weight: 700; margin-right: auto; }
 .lb-hint { color: #9aa; font-size: 12.5px; }
+@media (max-width: 900px) { .lb-hint { display: none; } }
 .lb-bar .btn { background: #1d2430; color: #fff; border-color: #333d4d; }
-.lb-stage { flex: 1; overflow: hidden; position: relative; cursor: grab; touch-action: none; }
-.lb-stage.drag { cursor: grabbing; }
-.lb-inner { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
-.lb-inner img { display: block; user-select: none; -webkit-user-drag: none; }
-.lb-pin span { left: -22px; top: -60px; width: 44px; height: 44px; border-width: 6px; }
+.lb-stage { flex: 1; overflow: hidden; position: relative; cursor: grab; touch-action: none; user-select: none; }
+.lb-pin span { left: -18px; top: -43.5px; width: 36px; height: 36px; border-width: 5px; } /* tip = top + 18 + 25.5 */
+.lb-pin::after { left: -5px; top: -5px; width: 10px; height: 10px; }
 
 .trow .tl { color: var(--muted); font-weight: 600; font-size: 11.5px; }
 

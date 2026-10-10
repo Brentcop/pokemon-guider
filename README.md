@@ -15,9 +15,10 @@ Personal guides that keep only the main story and the legendaries, without optio
 ## Using a guide
 - The **version toggle** swaps version-exclusive legendaries, puzzles, and the theme.
 - The **starter picker** sets the rival's team.
-- Check off steps as you go. **▶ Next step** jumps to where you left off. Progress is saved per game in your browser.
+- Check off steps as you go. Opening the guide takes you straight to where you left off: the first unchecked step after the last one you checked. **▶ Next step** does the same. Progress is saved per game in your browser.
 - **Legendary Dex** (right panel): mark catches, and click a row to jump to its step.
-- **📍 Where is this?** shows a pin on the region map. **Map buttons** open the location maps (scroll or pinch to zoom, drag to pan).
+- **📍 Where is this?** shows a pin on the region map. **Map buttons** open the inside maps (caves, towers, buildings). The location chip on a step opens its inside map when there is one. Place names in step text are links: 🗺 opens that place's inside map, 📍 shows it on the region map.
+- **Moving maps:** drag with the left, right or middle mouse button. Double-click zooms in (Shift+double-click zooms out). The mouse wheel zooms (it won't grab the wheel while you're scrolling the page past a map). The + / − / ⌖ (back to the pin) / ⤢ (full screen) buttons are in the corner. Full screen: wheel or pinch to zoom, arrow keys to move, + / − to zoom, 0 to fit, P to go back to the pin.
 - **Show extras** reveals optional tips.
 - **📖 Bulbapedia** on each step opens that exact section. Each part's header has a **More on Bulbapedia** list covering all the side content, items and full text.
 - **Parts collapse:** tap ▾ on a part header. Checking off a whole part folds it up automatically.

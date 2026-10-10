@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Route Guide</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=7">
+<link rel="stylesheet" href="css/style.css?v=9">
 </head>
 <body data-mode="dark">
 <header class="topbar">
@@ -43,16 +43,17 @@
 <div class="lightbox" id="lightbox" hidden>
   <div class="lb-bar">
     <span id="lbTitle"></span>
-    <span class="lb-hint">Scroll/pinch to zoom · drag to pan</span>
-    <button class="btn" id="lbFit">Fit</button>
+    <span class="lb-hint">Drag with any mouse button · scroll or pinch to zoom · double-click zooms in · arrows, + / −, 0 = fit, P = pin</span>
+    <button class="btn" id="lbOut" title="Zoom out (−)">−</button>
+    <button class="btn" id="lbIn" title="Zoom in (+)">+</button>
+    <button class="btn" id="lbHome" title="Back to the pin (P)">⌖</button>
+    <button class="btn" id="lbFit" title="Fit the whole map (0)">Fit</button>
     <a class="btn" id="lbOpen" target="_blank">Open full image ↗</a>
     <button class="btn" id="lbClose">✕</button>
   </div>
   <div class="lb-stage" id="lbStage">
-    <div class="lb-inner" id="lbInner">
-      <img id="lbImg" alt="">
-      <div class="lb-pin" id="lbPin" hidden><span></span></div>
-    </div>
+    <img id="lbImg" alt="" draggable="false">
+    <div class="lb-pin" id="lbPin" hidden><span></span></div>
   </div>
 </div>
 
@@ -101,13 +102,16 @@
     <tr><td><kbd>D</kbd></td><td>Legendary Dex (narrow screens)</td></tr>
     <tr><td><kbd>R</kbd></td><td>Region map</td></tr>
     <tr><td><kbd>Esc</kbd></td><td>Close maps and panels</td></tr>
+    <tr><td><kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd></td><td>Full-screen map: move (hold Shift to move faster)</td></tr>
+    <tr><td><kbd>+</kbd> / <kbd>−</kbd> · <kbd>0</kbd> · <kbd>P</kbd></td><td>Full-screen map: zoom · fit · back to the pin</td></tr>
+    <tr><td>Mouse</td><td>Maps: drag with left, right or middle button; double-click to zoom in (Shift+double-click zooms out). Scroll to zoom.</td></tr>
   </table>
 </dialog>
 
 <footer class="foot" id="foot"></footer>
 
-<script src="games/registry.js?v=7"></script>
-<script src="assets/dex.js?v=7"></script>
+<script src="games/registry.js?v=9"></script>
+<script src="assets/dex.js?v=9"></script>
 <script>
   // Load the requested game module, then the shared renderer.
   (() => {
@@ -115,7 +119,7 @@
     const entry = GAMES.find((g) => g.id === id && g.status === "ready");
     if (!entry) { location.replace("index.html"); return; }
     // Bump BUILD on every release so browsers (and GitHub Pages' cache) fetch fresh files.
-    const BUILD = "7";
+    const BUILD = "9";
     const load = (src) => new Promise((ok, fail) => {
       const s = document.createElement("script"); s.src = `${src}?v=${BUILD}`; s.onload = ok; s.onerror = fail; document.body.appendChild(s);
     });

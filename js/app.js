@@ -35,6 +35,11 @@
       collapsed: new Set(store.get("collapsed", [])),
     });
     if (!G.versions.some((v) => v.id === S.ver)) S.ver = G.versions[0].id;
+    // Renamed steps keep their check-off ("{a|b}" picks by version; V() isn't defined yet here).
+    const vi = G.versions.findIndex((v) => v.id === S.ver);
+    for (const [from, to] of Object.entries(G.renamedSteps || {})) {
+      if (S.done.delete(from)) S.done.add(to.replace(/\{([^{}|]*)\|([^{}]*)\}/g, (_, a, b) => (vi === 0 ? a : b)));
+    }
   }
   loadState();
   const save = () => {
@@ -73,6 +78,38 @@
   const mapSrc = (m, full) => m.drive
     ? `https://lh3.googleusercontent.com/d/${m.drive}=${full ? "s0" : "w1600"}`
     : `${BASE}maps/${full ? "" : "sm/"}${m.file}`;
+
+  // Place name → location-map key, from each map's name plus its `locs` aliases.
+  const MAP_BY_NAME = new Map();
+  for (const [k, m] of Object.entries(G.maps || {}))
+    for (const n of [m.name, ...(m.locs || [])]) if (!MAP_BY_NAME.has(n)) MAP_BY_NAME.set(n, k);
+  const asList = (x) => (x == null || x === "" ? [] : Array.isArray(x) ? x : [x]);
+  // Maps for a step: its own `map` (one key or a list) first, then the map for its location.
+  function stepMaps(st) {
+    const keys = asList(st.map).map(V);
+    if (MAP_BY_NAME.has(st.loc)) keys.push(MAP_BY_NAME.get(st.loc));
+    return [...new Set(keys)].filter((k) => G.maps[k]);
+  }
+
+  // Turn place names in step text into links: the location map if there is one, else the region pin.
+  const reEsc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const PLACES = [...new Set([...MAP_BY_NAME.keys(), ...Object.keys(G.pins || {})])].sort((a, b) => b.length - a.length);
+  const PLACE_RE = PLACES.length ? new RegExp(`(?<![\\w-])(?:${PLACES.map(reEsc).join("|")})(?![\\w-])`, "g") : null;
+  function linkPlaces(html, own) {
+    if (!PLACE_RE || !html) return html;
+    const seen = new Set([own]);
+    let inLink = 0;
+    return html.split(/(<[^>]*>)/).map((part) => {
+      if (part.startsWith("<")) { if (/^<(a|button)\b/i.test(part)) inLink++; else if (/^<\/(a|button)>/i.test(part)) inLink--; return part; }
+      if (inLink) return part;
+      return part.replace(PLACE_RE, (n) => {
+        if (seen.has(n)) return n;
+        seen.add(n);
+        const kind = MAP_BY_NAME.has(n) ? "map" : "pin";
+        return `<button type="button" class="xref" data-xref="${esc(n)}" data-kind="${kind}" title="${kind === "map" ? `Show the ${esc(n)} map` : `Show ${esc(n)} on the region map`}">${n}</button>`;
+      });
+    }).join("");
+  }
 
   // ---------- walkthrough links (e.g. Bulbapedia) ----------
   const WT = G.walkthrough;
@@ -137,21 +174,27 @@
 
   function renderStep(st) {
     const done = S.done.has(st.id);
-    const mapBtn = st.map ? `<button class="btn mapbtn" data-map="${st.id}"><img src="${mapSrc(G.maps[st.map])}" alt="" loading="lazy" referrerpolicy="no-referrer">🗺 ${G.maps[st.map].name} map</button>` : "";
+    const maps = stepMaps(st);
+    const mapBtns = maps.map((k) => `<button class="btn mapbtn" data-map="${k}"><img src="${mapSrc(G.maps[k])}" alt="" loading="lazy" referrerpolicy="no-referrer">🗺 ${G.maps[k].name} map</button>`).join("");
     const pinBtn = G.pins[st.loc] ? `<button class="btn" data-mini="${esc(st.loc)}">📍 Where is this?</button>` : "";
+    // The location chip opens the inside map when the place has one, otherwise the region pin.
+    const locMap = MAP_BY_NAME.get(st.loc);
+    const locBtn = !st.loc ? ""
+      : locMap ? `<button class="loc" data-map="${locMap}" title="Show the ${esc(G.maps[locMap].name)} map">🗺 ${esc(st.loc)}</button>`
+      : `<button class="loc" data-mini="${esc(st.loc)}" title="Show on the region map">📍 ${esc(st.loc)}</button>`;
+    const txt = (s) => linkPlaces(V(s), st.loc);
     return `<article class="step ${done ? "done" : ""}" id="${st.id}" data-type="${st.type}">
       <button class="check" data-step="${st.id}" aria-label="Mark done">✓</button>
       <div>
-        <div class="s-top"><span class="tag">${TYPE_LABEL[st.type]}</span>
-          ${st.loc ? `<button class="loc" data-mini="${esc(st.loc)}">📍 ${esc(st.loc)}</button>` : ""}</div>
+        <div class="s-top"><span class="tag">${TYPE_LABEL[st.type]}</span>${locBtn}</div>
         <h3 class="s-title">${V(st.title)}</h3>
         <div class="s-body">
-          ${st.text ? `<div>${V(st.text)}</div>` : ""}
+          ${st.text ? `<div>${txt(st.text)}</div>` : ""}
           ${st.type === "legend" ? renderLegendCard(st) : ""}
           ${renderBoss(st.boss)}
-          ${st.after ? `<div class="after">${V(st.after)}</div>` : ""}
-          ${st.callout ? `<div class="callout">${V(st.callout)}</div>` : ""}
-          <div class="s-actions">${mapBtn}${pinBtn}${st.ref && WT ? `<a class="btn wt" href="${refUrl(st.ref)}" target="_blank" rel="noopener" title="Read this section on ${WT.label}">📖 ${WT.label} ↗</a>` : ""}</div>
+          ${st.after ? `<div class="after">${txt(st.after)}</div>` : ""}
+          ${st.callout ? `<div class="callout">${txt(st.callout)}</div>` : ""}
+          <div class="s-actions">${mapBtns}${pinBtn}${st.ref && WT ? `<a class="btn wt" href="${refUrl(st.ref)}" target="_blank" rel="noopener" title="Read this section on ${WT.label}">📖 ${WT.label} ↗</a>` : ""}</div>
           <div class="mini-slot"></div>
         </div>
       </div>
@@ -274,111 +317,223 @@
     renderMain(); renderNav(); renderTracker(); updateProgress(); observeChapters();
   }
 
+  // ---------- pan / zoom viewer (inline maps and the full-screen lightbox) ----------
+  // The image is transformed inside `stage`; the pin lives outside the transform so it keeps
+  // its size and its tip always sits on [x%, y%] of the image.
+  const clamp = (v, a, b) => Math.min(Math.max(v, a), b);
+  let pageWheelAt = -1e9; // last wheel tick that scrolled the page
+  addEventListener("wheel", (e) => { if (!e.defaultPrevented) pageWheelAt = performance.now(); }, { passive: true });
+  function panZoom(stage, img, pinEl, { inline = false, homeScale } = {}) {
+    const V2 = { s: 1, x: 0, y: 0, w: 0, h: 0, pin: null };
+    const box = () => ({ w: stage.clientWidth, h: stage.clientHeight });
+    const fitScale = () => { const b = box(); return V2.w ? Math.min(b.w / V2.w, b.h / V2.h) : 1; };
+    const minS = () => fitScale() * (inline ? 1 : 0.5);
+    const maxS = () => Math.max(4, fitScale() * 2);
+    function apply() {
+      // Keep at least 80px of the image on screen so it can't be lost off an edge.
+      const b = box(), keep = 80, iw = V2.w * V2.s, ih = V2.h * V2.s;
+      V2.x = clamp(V2.x, Math.min(keep - iw, b.w - iw), Math.max(b.w - keep, 0));
+      V2.y = clamp(V2.y, Math.min(keep - ih, b.h - ih), Math.max(b.h - keep, 0));
+      img.style.transform = `translate(${V2.x}px,${V2.y}px) scale(${V2.s})`;
+      if (pinEl) {
+        pinEl.hidden = !V2.pin || !V2.w;
+        if (V2.pin) {
+          pinEl.style.left = V2.x + (V2.pin[0] / 100) * iw + "px";
+          pinEl.style.top = V2.y + (V2.pin[1] / 100) * ih + "px";
+        }
+      }
+    }
+    function zoomAt(mx, my, ns) {
+      ns = clamp(ns, minS(), maxS());
+      V2.x = mx - ((mx - V2.x) * ns) / V2.s; V2.y = my - ((my - V2.y) * ns) / V2.s; V2.s = ns; apply();
+    }
+    const zoomBy = (f) => { const b = box(); zoomAt(b.w / 2, b.h / 2, V2.s * f); };
+    function fit() {
+      const b = box(); V2.s = fitScale();
+      V2.x = (b.w - V2.w * V2.s) / 2; V2.y = (b.h - V2.h * V2.s) / 2; apply();
+    }
+    function home() {
+      if (!V2.w) return;
+      if (!V2.pin) return fit();
+      const b = box();
+      V2.s = clamp(homeScale ? homeScale(b, V2) : fitScale() * 3, minS(), maxS());
+      V2.x = b.w / 2 - (V2.pin[0] / 100) * V2.w * V2.s;
+      V2.y = b.h / 2 - (V2.pin[1] / 100) * V2.h * V2.s;
+      apply();
+    }
+    function setImage(w, h, pin) { V2.w = w; V2.h = h; V2.pin = pin || null; home(); }
+
+    // Drag with any mouse button (left, middle or right). Touch: pinch + drag in the
+    // lightbox; inline maps leave touch alone so the page still scrolls, and a tap opens full screen.
+    const ptrs = new Map(); let drag = null, pinch = null, moved = 0, lastType = "mouse";
+    stage.addEventListener("pointerdown", (e) => {
+      lastType = e.pointerType;
+      if (inline && e.pointerType !== "mouse") return;
+      if (e.target.closest("button, a")) return;
+      e.preventDefault();
+      try { stage.setPointerCapture(e.pointerId); } catch {}
+      ptrs.set(e.pointerId, e); moved = 0;
+      stage.classList.add("engaged");
+      if (ptrs.size === 2) {
+        const [a, b] = [...ptrs.values()];
+        pinch = { d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), s: V2.s }; drag = null;
+      } else { drag = { x: e.clientX - V2.x, y: e.clientY - V2.y }; stage.classList.add("drag"); }
+    });
+    stage.addEventListener("pointermove", (e) => {
+      if (!ptrs.has(e.pointerId)) return;
+      const prev = ptrs.get(e.pointerId);
+      moved += Math.abs(e.clientX - prev.clientX) + Math.abs(e.clientY - prev.clientY);
+      ptrs.set(e.pointerId, e);
+      if (pinch && ptrs.size === 2) {
+        const [a, b] = [...ptrs.values()], r = stage.getBoundingClientRect();
+        const d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+        zoomAt((a.clientX + b.clientX) / 2 - r.left, (a.clientY + b.clientY) / 2 - r.top, pinch.s * (d / pinch.d));
+      } else if (drag) { V2.x = e.clientX - drag.x; V2.y = e.clientY - drag.y; apply(); }
+    });
+    const endPtr = (e) => {
+      if (!ptrs.delete(e.pointerId)) return;
+      pinch = null; stage.classList.remove("drag");
+      const rest = [...ptrs.values()][0];
+      drag = rest ? { x: rest.clientX - V2.x, y: rest.clientY - V2.y } : null;
+    };
+    stage.addEventListener("pointerup", endPtr); stage.addEventListener("pointercancel", endPtr);
+    stage.addEventListener("contextmenu", (e) => e.preventDefault()); // right-drag pans instead
+    stage.addEventListener("mousedown", (e) => { if (e.button === 1) e.preventDefault(); }); // no middle-click autoscroll
+    stage.addEventListener("dragstart", (e) => e.preventDefault());
+    stage.addEventListener("dblclick", (e) => {
+      if (e.target.closest("button, a")) return;
+      const r = stage.getBoundingClientRect();
+      zoomAt(e.clientX - r.left, e.clientY - r.top, V2.s * (e.shiftKey ? 0.5 : 2));
+    });
+
+    // The wheel zooms. On inline maps it only skips zooming while the page is mid-scroll
+    // (a map sliding under the cursor shouldn't grab the wheel), or once zoomed all the way out.
+    stage.addEventListener("wheel", (e) => {
+      if (inline && !e.ctrlKey && !e.metaKey) {
+        const scrolling = performance.now() - pageWheelAt < 350;
+        const atLimit = e.deltaY > 0 && V2.s <= minS() * 1.001;
+        if (scrolling || atLimit || !V2.w) { pageWheelAt = performance.now(); return; }
+      }
+      e.preventDefault();
+      const r = stage.getBoundingClientRect(), k = e.ctrlKey && Math.abs(e.deltaY) < 50 ? 0.01 : 0.0015;
+      zoomAt(e.clientX - r.left, e.clientY - r.top, V2.s * Math.exp(-e.deltaY * k));
+    }, { passive: false });
+
+    // Keep the view centred on the same spot when the box changes size.
+    let last = box();
+    new ResizeObserver(() => {
+      const b = box();
+      if (!V2.w || !b.w) { last = b; return; }
+      if (!last.w) { last = b; home(); return; } // was hidden: start over from the default view
+      V2.x += (b.w - last.w) / 2; V2.y += (b.h - last.h) / 2; last = b; apply();
+    }).observe(stage);
+
+    return { setImage, fit, home, zoomBy, pan(dx, dy) { V2.x += dx; V2.y += dy; apply(); }, get tapIsTouch() { return lastType !== "mouse"; }, get moved() { return moved; } };
+  }
+
   // ---------- inline maps (region pin + location maps), shown inside a step ----------
   const regionSrc = (full) => mapSrc(G.regionMaps[S.ver], full);
   const pinFor = (p) => (!p ? null : Array.isArray(p) ? p : p[S.ver] || null);
+  const touchUI = matchMedia("(pointer: coarse)").matches;
 
-  // Crop `src` around pin [x%, y%] at `scale`× the box width; no pin → show the whole image.
+  // Show `src` in the step's map slot, centred on pin [x%, y%] with the image `scale`× the
+  // box width; no pin → the whole image. Same key again closes it.
   function inlineMap(slot, key, { src, full, pin, caption, title, scale = 3.2 }) {
     if (slot.dataset.key === key) { slot.innerHTML = ""; slot.dataset.key = ""; return; }
     slot.dataset.key = key;
-    slot.innerHTML = `<div class="minimap ${pin ? "" : "fit"}"><img src="${src}" alt="" referrerpolicy="no-referrer">
-      ${pin ? `<div class="pin"><span></span></div>` : ""}<div class="cap">${esc(caption)}</div><div class="zoom">⤢ Tap to zoom</div></div>`;
-    const mm = slot.firstChild, img = mm.querySelector("img");
-    if (pin) {
-      const place = () => {
-        if (!img.naturalWidth) return;
-        const cw = mm.clientWidth, chh = mm.clientHeight;
-        const iw = cw * scale, ih = iw * (img.naturalHeight / img.naturalWidth);
-        img.style.width = iw + "px";
-        img.style.left = cw / 2 - (pin[0] / 100) * iw + "px"; img.style.top = chh / 2 - (pin[1] / 100) * ih + "px";
-      };
-      img.complete ? place() : img.addEventListener("load", place);
-    }
-    mm.addEventListener("click", () => openLightbox(full, title, pin));
+    slot.innerHTML = `<div class="minimap ${pin ? "" : "fit"}">
+      <img src="${src}" alt="" referrerpolicy="no-referrer" draggable="false">
+      <div class="pin" hidden><span></span></div>
+      <div class="cap">${esc(caption)}</div>
+      <div class="mm-tools">
+        <button type="button" data-z="in" title="Zoom in">+</button><button type="button" data-z="out" title="Zoom out">−</button>
+        <button type="button" data-z="home" title="${pin ? "Back to the pin" : "Fit the whole map"}">⌖</button><button type="button" data-z="full" title="Full screen">⤢</button>
+      </div>
+      <div class="mm-hint">${touchUI ? "Tap to open full screen" : "Drag to move · scroll to zoom · double-click zooms in"}</div>
+    </div>`;
+    const mm = slot.firstElementChild, img = mm.querySelector("img");
+    const pz = panZoom(mm, img, mm.querySelector(".pin"), { inline: true, homeScale: (b, v) => (b.w * scale) / v.w });
+    const ready = () => {
+      if (!img.naturalWidth) return;
+      // A whole-map view gets a box shaped like the image (up to 520px tall).
+      if (!pin) mm.style.height = Math.min(520, mm.clientWidth * (img.naturalHeight / img.naturalWidth)) + "px";
+      pz.setImage(img.naturalWidth, img.naturalHeight, pin);
+      mm.classList.add("ready");
+    };
+    img.complete ? ready() : img.addEventListener("load", ready);
+    mm.addEventListener("click", (e) => {
+      const z = e.target.closest("[data-z]")?.dataset.z;
+      if (z === "in") pz.zoomBy(1.5);
+      else if (z === "out") pz.zoomBy(1 / 1.5);
+      else if (z === "home") pz.home();
+      else if (z === "full" || (!z && pz.tapIsTouch)) openLightbox(full, title, pin);
+    });
   }
 
-  function toggleRegion(btn) {
+  function toggleRegion(btn, loc = btn.dataset.mini) {
     const step = btn.closest(".step");
     if (step.classList.contains("done") || !G.regionMaps) return;
-    const loc = btn.dataset.mini;
     inlineMap(step.querySelector(".mini-slot"), "region:" + loc, {
       src: regionSrc(), full: regionSrc(true), pin: G.pins[loc],
       caption: `${loc} (approx.)`, title: `${loc} · ${G.regionName || "Region"}`,
     });
   }
 
-  function toggleLocationMap(btn) {
+  // A step's location map. The step's mapPin/mapLabel apply to its own `map` (the first one listed).
+  function toggleLocationMap(btn, key = btn.dataset.map) {
     const step = btn.closest(".step");
-    const st = G.chapters.flatMap((c) => c.steps).find((x) => x.id === btn.dataset.map);
-    const m = G.maps[st.map], pin = pinFor(st.mapPin);
-    inlineMap(step.querySelector(".mini-slot"), "map:" + st.id, {
+    const st = G.chapters.flatMap((c) => c.steps).find((x) => x.id === step.id);
+    const m = G.maps[key], own = V(asList(st.map)[0]) === key;
+    const pin = own ? pinFor(st.mapPin) : null, label = own && pin && st.mapLabel ? V(st.mapLabel) : "";
+    inlineMap(step.querySelector(".mini-slot"), "map:" + key, {
       src: mapSrc(m), full: mapSrc(m, true), pin, scale: 2.4,
-      caption: pin && st.mapLabel ? `${m.name}: ${V(st.mapLabel)}` : m.name,
-      title: pin && st.mapLabel ? `${m.name} · ${V(st.mapLabel)}` : m.name,
+      caption: label ? `${m.name}: ${label}` : m.name,
+      title: label ? `${m.name} · ${label}` : m.name,
     });
   }
 
-  // ---------- lightbox with pan / wheel-zoom / pinch-zoom ----------
-  const LB = { s: 1, x: 0, y: 0, w: 0, h: 0 };
-  const lb = $("#lightbox"), stage = $("#lbStage"), inner = $("#lbInner"), lbImg = $("#lbImg"), lbPin = $("#lbPin");
-  const applyLB = () => { inner.style.transform = `translate(${LB.x}px,${LB.y}px) scale(${LB.s})`; };
-  const fitScale = () => { const r = stage.getBoundingClientRect(); return Math.min(r.width / LB.w, r.height / LB.h); };
-  function fitLB() {
-    const r = stage.getBoundingClientRect();
-    LB.s = fitScale(); LB.x = (r.width - LB.w * LB.s) / 2; LB.y = (r.height - LB.h * LB.s) / 2; applyLB();
+  // A place name linked inside step text.
+  function showXref(btn) {
+    const n = btn.dataset.xref;
+    if (MAP_BY_NAME.has(n)) toggleLocationMap(btn, MAP_BY_NAME.get(n));
+    else toggleRegion(btn, n);
+    btn.closest(".step").querySelector(".mini-slot").scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
-  function zoomAt(mx, my, ns) {
-    ns = Math.min(Math.max(ns, fitScale() * 0.5), 4);
-    LB.x = mx - ((mx - LB.x) * ns) / LB.s; LB.y = my - ((my - LB.y) * ns) / LB.s; LB.s = ns; applyLB();
-  }
+
+  // ---------- full-screen lightbox ----------
+  const lb = $("#lightbox"), stage = $("#lbStage"), lbImg = $("#lbImg");
+  const lbView = panZoom(stage, lbImg, $("#lbPin"));
+  let lbPinNow = null;
   function openLightbox(src, title, pin) {
     lb.hidden = false; document.body.style.overflow = "hidden";
     $("#lbTitle").textContent = title; $("#lbOpen").href = src;
-    lbPin.hidden = !pin;
-    lbImg.onload = () => {
-      LB.w = lbImg.naturalWidth; LB.h = lbImg.naturalHeight;
-      inner.style.width = LB.w + "px"; inner.style.height = LB.h + "px";
-      if (pin) {
-        const px = (pin[0] / 100) * LB.w, py = (pin[1] / 100) * LB.h, r = stage.getBoundingClientRect();
-        lbPin.style.left = px + "px"; lbPin.style.top = py + "px";
-        LB.s = fitScale() * 3; LB.x = r.width / 2 - px * LB.s; LB.y = r.height / 2 - py * LB.s; applyLB();
-      } else fitLB();
-    };
+    lbPinNow = pin || null;
+    lbView.setImage(0, 0, null);
+    lbImg.onload = () => lbView.setImage(lbImg.naturalWidth, lbImg.naturalHeight, lbPinNow);
     lbImg.src = src;
     if (lbImg.complete && lbImg.naturalWidth) lbImg.onload();
   }
   function closeLightbox() { lb.hidden = true; document.body.style.overflow = ""; lbImg.removeAttribute("src"); }
-  stage.addEventListener("wheel", (e) => {
+  $("#lbClose").onclick = closeLightbox;
+  $("#lbFit").onclick = () => lbView.fit();
+  $("#lbIn").onclick = () => lbView.zoomBy(1.5);
+  $("#lbOut").onclick = () => lbView.zoomBy(1 / 1.5);
+  $("#lbHome").onclick = () => lbView.home();
+  document.addEventListener("keydown", (e) => {
+    if (lb.hidden || e.ctrlKey || e.metaKey || e.altKey) return;
+    const k = e.key, step = e.shiftKey ? 240 : 80;
+    if (k === "Escape") closeLightbox();
+    else if (k === "+" || k === "=") lbView.zoomBy(1.4);
+    else if (k === "-" || k === "_") lbView.zoomBy(1 / 1.4);
+    else if (k === "0") lbView.fit();
+    else if (k === "p" || k === "P") lbView.home();
+    else if (k === "ArrowLeft") lbView.pan(step, 0);
+    else if (k === "ArrowRight") lbView.pan(-step, 0);
+    else if (k === "ArrowUp") lbView.pan(0, step);
+    else if (k === "ArrowDown") lbView.pan(0, -step);
+    else return;
     e.preventDefault();
-    const r = stage.getBoundingClientRect();
-    zoomAt(e.clientX - r.left, e.clientY - r.top, LB.s * Math.exp(-e.deltaY * 0.0015));
-  }, { passive: false });
-  const ptrs = new Map(); let pinch = null, drag = null;
-  stage.addEventListener("pointerdown", (e) => {
-    stage.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, e);
-    if (ptrs.size === 2) {
-      const [a, b] = [...ptrs.values()];
-      pinch = { d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), s: LB.s }; drag = null;
-    } else { drag = { x: e.clientX - LB.x, y: e.clientY - LB.y }; stage.classList.add("drag"); }
   });
-  stage.addEventListener("pointermove", (e) => {
-    if (!ptrs.has(e.pointerId)) return;
-    ptrs.set(e.pointerId, e);
-    if (pinch && ptrs.size === 2) {
-      const [a, b] = [...ptrs.values()], r = stage.getBoundingClientRect();
-      const d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-      zoomAt((a.clientX + b.clientX) / 2 - r.left, (a.clientY + b.clientY) / 2 - r.top, pinch.s * (d / pinch.d));
-    } else if (drag) { LB.x = e.clientX - drag.x; LB.y = e.clientY - drag.y; applyLB(); }
-  });
-  const endPtr = (e) => {
-    ptrs.delete(e.pointerId); pinch = null; stage.classList.remove("drag");
-    const rest = [...ptrs.values()][0];
-    drag = rest ? { x: rest.clientX - LB.x, y: rest.clientY - LB.y } : null;
-  };
-  stage.addEventListener("pointerup", endPtr); stage.addEventListener("pointercancel", endPtr);
-  $("#lbClose").onclick = closeLightbox; $("#lbFit").onclick = fitLB;
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !lb.hidden) closeLightbox(); });
 
   // ---------- active chapter highlighting ----------
   let io;
@@ -392,18 +547,18 @@
     $$(".chapter").forEach((c) => io.observe(c));
   }
 
-  function flashTo(id) {
+  function flashTo(id, instant) {
     const el = document.getElementById(id); if (!el) return;
     const sec = el.closest(".chapter");
     if (sec?.classList.contains("collapsed")) { S.collapsed.delete(sec.id); save(); sec.classList.remove("collapsed"); }
-    if (el.classList.contains("done") && S.hideDone) { S.hideDone = false; save(); renderAll(); return flashTo(id); }
-    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (el.classList.contains("done") && S.hideDone) { S.hideDone = false; save(); renderAll(); return flashTo(id, instant); }
+    el.scrollIntoView({ behavior: instant ? "instant" : "smooth", block: "start" });
     el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
   }
 
   // ---------- events ----------
   document.addEventListener("click", (e) => {
-    const t = e.target.closest("[data-step],[data-catch],[data-map],[data-mini],[data-goto],[data-ver],[data-part],[data-collapse],[data-drawer]");
+    const t = e.target.closest("[data-step],[data-catch],[data-map],[data-mini],[data-xref],[data-goto],[data-ver],[data-part],[data-collapse],[data-drawer]");
     if (!t) return;
     if (t.dataset.collapse) { toggleCollapse(t.dataset.collapse); return; }
     if (t.dataset.drawer) { setDrawer(false); return; }
@@ -437,16 +592,22 @@
     }
     if (t.dataset.map) { toggleLocationMap(t); return; }
     if (t.dataset.mini) { toggleRegion(t); return; }
+    if (t.dataset.xref) { showXref(t); return; }
     if (t.dataset.goto) { setDrawer(false); flashTo(t.dataset.goto); return; }
   });
   $("#starter").onchange = (e) => { S.starter = e.target.value; save(); renderAll(); };
   $("#extras").onchange = (e) => { S.extras = e.target.checked; save(); renderAll(); };
   $("#hideDone").onchange = (e) => { S.hideDone = e.target.checked; save(); renderAll(); };
   $("#regionBtn").onclick = () => openLightbox(regionSrc(true), `${G.regionName || "Region"} · ${verLabel()}`);
-  $("#nextBtn").onclick = () => {
-    const next = G.chapters.flatMap((c) => c.steps).find((s) => !S.done.has(s.id) && (S.extras || s.type !== "tip"));
-    if (next) flashTo(next.id);
-  };
+  // Where you left off: the first unchecked step after the last one you checked
+  // (skipped steps further back don't pull you away from where you are).
+  function resumeStep() {
+    const all = G.chapters.flatMap((c) => c.steps).filter((s) => S.extras || s.type !== "tip");
+    let last = -1;
+    all.forEach((s, i) => { if (S.done.has(s.id)) last = i; });
+    return all[last + 1] || all.find((s) => !S.done.has(s.id));
+  }
+  $("#nextBtn").onclick = () => { const next = resumeStep(); if (next) flashTo(next.id); };
 
   // ---------- collapsible parts ----------
   function toggleCollapse(id) {
@@ -533,7 +694,10 @@
     $("#syncConnected").hidden = !Sync.connected;
   }
   Sync.onStatus(paintSync);
-  Sync.onRemoteChange(() => { loadState(); renderAll(); });
+  Sync.onRemoteChange(() => {
+    loadState(); renderAll();
+    if (!userMoved) resume(); // newer progress from another device arrived before you started scrolling
+  });
   $("#syncBtn").onclick = () => { $("#codeOut").value = Sync.exportCode(); $("#codeIn").value = ""; syncDlg.showModal(); };
   $("#syncClose").onclick = () => syncDlg.close();
   syncDlg.addEventListener("click", (e) => { if (e.target === syncDlg) syncDlg.close(); });
@@ -567,4 +731,35 @@
 
   renderChrome();
   renderAll();
+
+  // ---------- open where you left off ----------
+  // Puts the first unchecked step after your last check-off (its checkbox) right under the
+  // sticky header, and holds it there while fonts and images finish loading and shift the page.
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+  let userMoved = false;
+  for (const ev of ["wheel", "touchmove", "keydown", "pointerdown"]) addEventListener(ev, () => { userMoved = true; }, { passive: true });
+  function placeStep(el) {
+    const head = $(".topbar").getBoundingClientRect().bottom;
+    scrollTo({ top: el.getBoundingClientRect().top + scrollY - head - 12, behavior: "instant" });
+  }
+  function resume() {
+    if (!S.done.size || (location.hash && document.getElementById(location.hash.slice(1)))) return;
+    const st = resumeStep();
+    if (!st) return;
+    flashTo(st.id, true); // opens its part if collapsed, turns off "Hide done" if needed
+    const el = document.getElementById(st.id);
+    if (!el) return;
+    userMoved = false;
+    focusId = st.id; // J/K continue from here
+    $$(".step.kfocus").forEach((x) => x.classList.remove("kfocus"));
+    el.classList.add("kfocus");
+    placeStep(el);
+    const hold = new ResizeObserver(() => { if (!userMoved) placeStep(el); });
+    hold.observe($("#main"));
+    document.fonts?.ready.then(() => { if (!userMoved) placeStep(el); });
+    addEventListener("load", () => { if (!userMoved) placeStep(el); }, { once: true });
+    setTimeout(() => hold.disconnect(), 4000);
+  }
+  if (document.readyState === "loading") addEventListener("DOMContentLoaded", resume, { once: true });
+  else resume();
 })();
