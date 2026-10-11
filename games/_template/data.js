@@ -10,6 +10,8 @@
    Writing steps:
      • Version-specific text: "{first version text|second version text}",
        in the same order as `versions` below. Works in any string field.
+     • Starter-specific names: "${slot}" becomes that slot's name for the chosen starter
+       (see starter.slots), e.g. "${bird}" → the legendary bird that starter gets.
      • Step types: story · boss · legend · key · prep · heal · tip
        (tip = optional, hidden unless "Show extras" is on)
      • Team entries: ["Name", level, "Type1/Type2", "Held item"?]
@@ -42,6 +44,7 @@ const LEGENDS = [
   // {
   //   id: "xerneas", name: "Xerneas", dex: 716, lvl: 50, types: ["Fairy"],
   //   ver: "both" | "<versionId>",   // which version can catch it
+  //   starter: "<starterId>",        // optional: only in saves that picked this starter (X & Y's birds)
   //   native: "<versionId>",         // optional: version that unlocks it natively
   //   other: "How the other version gets it",  // shown when native !== current version
   //   phase: "story" | "post",
@@ -74,6 +77,7 @@ const CHAPTERS = [
       //   boss: { who: "Gym Leader X", rival: false, team: [["Pokémon", 12, "Bug"]], use: "Fire, Flying, Rock.", reward: "Badge + TM" },
       //   after: "Text shown below the team." },
       // { id: "ch1-legend", type: "legend", legend: "xerneas", loc: "Place", title: "Xerneas (Lv50)",
+      //   (legend: "{xerneas|yveltal}" picks by version; "$bird" picks the legend named in that starter slot)
       //   text: "How to reach it.", tactic: "How to catch it." },
     ],
   },
@@ -85,6 +89,7 @@ window.GAME = {
   skin: "kalos",          // look: "gen5" (B2W2's DS menu panels) or "kalos" (X & Y); themes live in css/style.css
   title: "Game Route",
   tagline: "",
+  defaultVersion: "v1",   // optional: version shown before the user picks one (default: the first)
   versions: [
     { id: "v1", label: "Version 1", mode: "dark",  accent: "#33c3f0", accent2: "#1b8fd1", ink: "#04121a" },
     { id: "v2", label: "Version 2", mode: "light", accent: "#e8462f", accent2: "#c0321d", ink: "#ffffff" },

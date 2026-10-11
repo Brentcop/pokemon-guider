@@ -26,7 +26,7 @@
   const S = {};
   function loadState() {
     Object.assign(S, {
-      ver: store.get("ver", G.versions[0].id),
+      ver: store.get("ver", G.defaultVersion || G.versions[0].id),
       starter: store.get("starter", G.starter?.options[0][0]),
       extras: store.get("extras", false),
       hideDone: store.get("hideDone", false),
@@ -34,7 +34,7 @@
       caught: new Set(store.get("caught", [])),
       collapsed: new Set(store.get("collapsed", [])),
     });
-    if (!G.versions.some((v) => v.id === S.ver)) S.ver = G.versions[0].id;
+    if (!G.versions.some((v) => v.id === S.ver)) S.ver = G.defaultVersion || G.versions[0].id;
     // Renamed steps keep their check-off ("{a|b}" picks by version; V() isn't defined yet here).
     const vi = G.versions.findIndex((v) => v.id === S.ver);
     for (const [from, to] of Object.entries(G.renamedSteps || {})) {
@@ -60,8 +60,11 @@
   const verIndex = () => G.versions.findIndex((v) => v.id === S.ver);
   const verLabel = () => G.versions[verIndex()].label;
 
-  // Swap {first version text|second version text}
-  const V = (s) => (s == null ? s : String(s).replace(/\{([^{}|]*)\|([^{}]*)\}/g, (_, a, b) => (verIndex() === 0 ? a : b)));
+  // Swap {first version text|second version text}, and ${slot} for the name in that starter slot
+  // (e.g. "${bird}" → the legendary bird your starter gets).
+  const slotName = (k) => G.starter?.slots[S.starter]?.[k]?.[0];
+  const V = (s) => (s == null ? s : String(s).replace(/\{([^{}|]*)\|([^{}]*)\}/g, (_, a, b) => (verIndex() === 0 ? a : b))
+    .replace(/\$\{(\w+)\}/g, (m, k) => slotName(k) || m));
   const sprite = (name, anim) => {
     const id = DEX[name];
     return id ? `${G.sprites}/${id}.${anim ? "gif" : "png"}` : "";
@@ -75,8 +78,11 @@
   const typePills = (t) => `<span class="types">${String(t || "").split(/[\/,]/).map((x) => x.trim()).filter(Boolean)
     .map((x) => `<span class="ty" style="background:${TYPE_COLORS[x] || "#888"}">${x}</span>`).join("")}</span>`;
 
-  const legendsForVersion = () => G.legends.filter((l) => l.ver === "both" || l.ver === S.ver);
+  // Legendaries you can get in this save: right version, and right starter for starter-picked ones.
+  const legendsForVersion = () => G.legends.filter((l) => (l.ver === "both" || l.ver === S.ver) && (!l.starter || l.starter === S.starter));
   const legendById = (id) => G.legends.find((l) => l.id === id);
+  // A step's legendary: an id ({x|y} allowed), or "$slot" for the one named in that starter slot.
+  const legendOf = (st) => { const id = V(st.legend) || ""; return legendById(id.startsWith("$") ? (slotName(id.slice(1)) || "").toLowerCase() : id); };
   // A map is one of:
   //   { drive: "<Google Drive file id>" }   linked from the source site (e.g. MewMaps)
   //   { bulba: "File name.png" }            Bulbapedia image archive; {v1|v2} picks a version's file
@@ -172,7 +178,7 @@
 
   // Legendary encounters: the showpiece. Big sprite on an aura in its type colors, and a stamp once caught.
   function renderLegendCard(step) {
-    const l = legendById(V(step.legend));
+    const l = legendOf(step);
     if (!l) return "";
     const caught = S.caught.has(l.id);
     const [t1, t2 = t1] = l.types.map((t) => TYPE_COLORS[t] || "#888");
@@ -267,7 +273,7 @@
   }
 
   function renderChapter(ch) {
-    const legs = ch.steps.filter((s) => s.type === "legend").map((s) => legendById(V(s.legend))?.name).filter(Boolean);
+    const legs = ch.steps.filter((s) => s.type === "legend").map((s) => legendOf(s)?.name).filter(Boolean);
     const req = requiredSteps(ch), nDone = req.filter((s) => S.done.has(s.id)).length;
     const gym = gymOf(ch), gc = gym && TYPE_COLORS[gym.type];
     return `<section class="chapter ${S.collapsed.has(ch.id) ? "collapsed" : ""} ${gc ? "has-gym" : ""}" id="${ch.id}"${gc ? ` style="--gym:${gc}"` : ""}>
