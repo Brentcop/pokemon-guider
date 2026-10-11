@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Route Guide</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=15">
+<link rel="stylesheet" href="css/style.css?v=16">
 </head>
 <body data-mode="dark">
 <header class="topbar">
   <div class="brand">
     <a class="ball" href="index.html" title="All guides" aria-label="All guides"></a>
-    <div>
+    <div class="brand-txt">
       <h1 id="gTitle">Route Guide</h1>
       <p class="sub" id="gTagline"></p>
     </div>
@@ -21,13 +21,21 @@
     <label class="sel" id="starterWrap" hidden><span id="starterLabel">Starter</span>
       <select id="starter"></select>
     </label>
-    <label class="tog"><input type="checkbox" id="extras"> Show extras</label>
-    <label class="tog"><input type="checkbox" id="hideDone"> Hide done</label>
-    <button class="btn" id="regionBtn" title="Open the full region map">🗺 Region map</button>
-    <button class="btn" id="typesBtn" title="Type chart and Pokémon matchups (T)">⚔ Types</button>
-    <button class="btn dex-btn" id="dexBtn" title="Legendary Dex (D)">★ Dex <span id="dexCount"></span></button>
-    <button class="btn kbd-btn" id="kbdBtn" title="Keyboard shortcuts (?)">⌨</button>
-    <button class="btn sync-btn" id="syncBtn" title="Sync, backup &amp; offline" data-state="off"><span class="dot"></span><span class="lbl">☁ Sync</span></button>
+    <button class="btn" id="regionBtn" title="Open the full region map (R)"><svg class="ic"><use href="#i-map"/></svg><span class="bl">Region map</span></button>
+    <button class="btn" id="typesBtn" title="Type chart and Pokémon matchups (T)"><svg class="ic"><use href="#i-swords"/></svg><span class="bl">Types</span></button>
+    <button class="btn dex-btn" id="dexBtn" title="Legendary Dex (D)"><svg class="ic"><use href="#i-star"/></svg><span class="bl">Dex</span> <span id="dexCount"></span></button>
+    <div class="menu-wrap">
+      <button class="btn menu-btn" id="menuBtn" title="View, sync &amp; shortcuts" aria-haspopup="true" aria-expanded="false" aria-controls="viewMenu"><svg class="ic"><use href="#i-menu"/></svg><span class="bl">View</span><span class="dot"></span></button>
+      <div class="menu" id="viewMenu" role="menu" hidden>
+        <div class="menu-h">View</div>
+        <label class="menu-item tog"><input type="checkbox" id="extras"> <span>Show extras<small>Optional tips</small></span></label>
+        <label class="menu-item tog"><input type="checkbox" id="hideDone"> <span>Hide done<small>Hide finished steps completely</small></span></label>
+        <div class="menu-sep"></div>
+        <button class="menu-item sync-btn" id="syncBtn" data-state="off" role="menuitem"><svg class="ic"><use href="#i-cloud"/></svg><span class="lbl">Sync</span><span class="dot"></span><small class="menu-sub">Cloud sync, backup &amp; offline</small></button>
+        <button class="menu-item kbd-btn" id="kbdBtn" role="menuitem"><svg class="ic"><use href="#i-keyboard"/></svg><span>Keyboard shortcuts</span><kbd>?</kbd></button>
+        <a class="menu-item" href="index.html" role="menuitem"><svg class="ic"><use href="#i-home"/></svg><span>All guides</span></a>
+      </div>
+    </div>
   </div>
   <div class="progress"><div class="bar" id="bar"></div></div>
 </header>
@@ -39,18 +47,18 @@
 </div>
 <div class="drawer-backdrop" id="drawerBackdrop" hidden></div>
 
-<button class="fab" id="nextBtn" title="Jump to your next unchecked step">▶ Next step</button>
+<button class="fab" id="nextBtn" title="Jump to your next unchecked step (N)"><svg class="ic"><use href="#i-play"/></svg><span>Next step</span></button>
 
 <div class="lightbox" id="lightbox" hidden>
   <div class="lb-bar">
     <span id="lbTitle"></span>
     <span class="lb-hint">Drag with any mouse button · scroll or pinch to zoom · double-click zooms in · arrows, + / −, 0 = fit, P = pin</span>
-    <button class="btn" id="lbOut" title="Zoom out (−)">−</button>
-    <button class="btn" id="lbIn" title="Zoom in (+)">+</button>
-    <button class="btn" id="lbHome" title="Back to the pin (P)">⌖</button>
-    <button class="btn" id="lbFit" title="Fit the whole map (0)">Fit</button>
-    <a class="btn" id="lbOpen" target="_blank">Open full image ↗</a>
-    <button class="btn" id="lbClose">✕</button>
+    <button class="btn ib" id="lbOut" title="Zoom out (−)" aria-label="Zoom out"><svg class="ic"><use href="#i-minus"/></svg></button>
+    <button class="btn ib" id="lbIn" title="Zoom in (+)" aria-label="Zoom in"><svg class="ic"><use href="#i-plus"/></svg></button>
+    <button class="btn ib" id="lbHome" title="Back to the pin (P)" aria-label="Back to the pin"><svg class="ic"><use href="#i-target"/></svg></button>
+    <button class="btn" id="lbFit" title="Fit the whole map (0)"><svg class="ic"><use href="#i-fit"/></svg><span class="bl">Fit</span></button>
+    <a class="btn" id="lbOpen" target="_blank" title="Open the full image in a new tab"><svg class="ic"><use href="#i-external"/></svg><span class="bl">Full image</span></a>
+    <button class="btn ib" id="lbClose" title="Close (Esc)" aria-label="Close"><svg class="ic"><use href="#i-close"/></svg></button>
   </div>
   <div class="lb-stage" id="lbStage">
     <img id="lbImg" alt="" draggable="false">
@@ -59,7 +67,7 @@
 </div>
 
 <dialog class="sync-dlg" id="syncDlg">
-  <div class="sd-head"><h2>☁ Sync, backup &amp; offline</h2><button class="btn" id="syncClose">✕</button></div>
+  <div class="sd-head"><h2><svg class="ic"><use href="#i-cloud"/></svg>Sync, backup &amp; offline</h2><button class="btn ib" id="syncClose" aria-label="Close"><svg class="ic"><use href="#i-close"/></svg></button></div>
   <p class="sd-note">Progress for <b>all games</b> is saved together.</p>
 
   <section class="sd-sec">
@@ -67,7 +75,7 @@
     <div id="syncConnect">
       <p>Saves your progress to a <b>private GitHub Gist</b> and keeps every connected device up to date.</p>
       <ol>
-        <li><a href="https://github.com/settings/tokens/new?scopes=gist&amp;description=Pokemon%20Route%20Guides%20sync" target="_blank" rel="noopener">Create a GitHub token ↗</a>. Only the <b>gist</b> box should be checked (it's pre-checked). Pick an expiration you're happy with, or <b>No expiration</b>.</li>
+        <li><a href="https://github.com/settings/tokens/new?scopes=gist&amp;description=Pokemon%20Route%20Guides%20sync" target="_blank" rel="noopener">Create a GitHub token</a>. Only the <b>gist</b> box should be checked (it's pre-checked). Pick an expiration you're happy with, or <b>No expiration</b>.</li>
         <li>Click <b>Generate token</b>, copy it, and paste it below. Do this once on each device.</li>
       </ol>
       <div class="sd-row"><input id="tokenIn" type="password" placeholder="ghp_…" autocomplete="off" spellcheck="false"><button class="btn primary" id="tokenSave">Connect</button></div>
@@ -99,9 +107,9 @@
 </dialog>
 
 <dialog class="sync-dlg types-dlg" id="typesDlg">
-  <div class="sd-head"><h2>⚔ Types</h2>
+  <div class="sd-head"><h2><svg class="ic"><use href="#i-swords"/></svg>Types</h2>
     <div class="tt-tabs"><button type="button" class="btn on" data-tt-tab="lookup">Matchups</button><button type="button" class="btn" data-tt-tab="chart">Type chart</button></div>
-    <button class="btn" id="ttClose">✕</button></div>
+    <button class="btn ib" id="ttClose" aria-label="Close"><svg class="ic"><use href="#i-close"/></svg></button></div>
   <div id="ttLookup">
     <input id="ttSearch" list="ttList" placeholder="Pokémon name, e.g. Kyurem" autocomplete="off" spellcheck="false">
     <datalist id="ttList"></datalist>
@@ -113,7 +121,7 @@
 </dialog>
 
 <dialog class="sync-dlg kbd-dlg" id="kbdDlg">
-  <div class="sd-head"><h2>⌨ Keyboard shortcuts</h2><button class="btn" id="kbdClose">✕</button></div>
+  <div class="sd-head"><h2><svg class="ic"><use href="#i-keyboard"/></svg>Keyboard shortcuts</h2><button class="btn ib" id="kbdClose" aria-label="Close"><svg class="ic"><use href="#i-close"/></svg></button></div>
   <table class="kbd-table">
     <tr><td><kbd>J</kbd> / <kbd>K</kbd></td><td>Next / previous step</td></tr>
     <tr><td><kbd>X</kbd> or <kbd>Space</kbd></td><td>Check / uncheck the selected step</td></tr>
@@ -134,10 +142,11 @@
 
 <footer class="foot" id="foot"></footer>
 
-<script src="games/registry.js?v=15"></script>
-<script src="assets/dex.js?v=15"></script>
-<script src="assets/pokedex.js?v=15"></script>
-<script src="assets/types.js?v=15"></script>
+<script src="js/icons.js?v=16"></script>
+<script src="games/registry.js?v=16"></script>
+<script src="assets/dex.js?v=16"></script>
+<script src="assets/pokedex.js?v=16"></script>
+<script src="assets/types.js?v=16"></script>
 <script>
   // Load the requested game module, then the shared renderer.
   (() => {
@@ -145,7 +154,7 @@
     const entry = GAMES.find((g) => g.id === id && g.status === "ready");
     if (!entry) { location.replace("index.html"); return; }
     // Bump BUILD on every release so browsers (and GitHub Pages' cache) fetch fresh files.
-    const BUILD = "15";
+    const BUILD = "16";
     const load = (src) => new Promise((ok, fail) => {
       const s = document.createElement("script"); s.src = `${src}?v=${BUILD}`; s.onload = ok; s.onerror = fail; document.body.appendChild(s);
     });

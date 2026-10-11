@@ -51,6 +51,8 @@
 
   // TYPE_COLORS comes from assets/types.js (shared with the Types panel).
   const TYPE_LABEL = { story: "Story", boss: "Battle", legend: "Legendary", key: "Key item", prep: "Prep", heal: "Heal", tip: "Extra" };
+  const TYPE_ICON = { story: "flag", boss: "swords", legend: "star", key: "key", prep: "bag", heal: "heart", tip: "bulb" };
+  const I = window.icon;
 
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -63,6 +65,12 @@
   const sprite = (name, anim) => {
     const id = DEX[name];
     return id ? `${G.sprites}/${id}.${anim ? "gif" : "png"}` : "";
+  };
+  // The animated sprite where there is one, else the still .png (marked .png: it has transparent
+  // padding around the Pokémon, which the CSS crops so both fill the frame the same way).
+  const spriteImg = (name, alt = "") => {
+    const gif = sprite(name, true);
+    return gif ? `<img class="sp" src="${gif}" alt="${esc(alt)}" loading="lazy" onerror="this.onerror=null;this.classList.add('png');this.src='${sprite(name)}'">` : "";
   };
   const typePills = (t) => `<span class="types">${String(t || "").split(/[\/,]/).map((x) => x.trim()).filter(Boolean)
     .map((x) => `<span class="ty" style="background:${TYPE_COLORS[x] || "#888"}">${x}</span>`).join("")}</span>`;
@@ -127,11 +135,11 @@
     const skip = otherLabels();
     const groups = ch.refs.map((p) => {
       const secs = (WT.sections[p] || []).filter(([label]) => !skip.some((x) => label.includes(x)));
-      return `<div class="more-group"><a class="more-part" href="${wtUrl(p)}" target="_blank" rel="noopener">${WT.partLabel(p)} ↗</a>
+      return `<div class="more-group"><a class="more-part" href="${wtUrl(p)}" target="_blank" rel="noopener">${WT.partLabel(p)} ${I("external")}</a>
         ${secs.map(([label, a]) => `<a href="${wtUrl(p, a)}" target="_blank" rel="noopener">${esc(label)}</a>`).join("")}</div>`;
     }).join("");
     const n = ch.refs.reduce((t, p) => t + (WT.sections[p] || []).length, 0);
-    return `<details class="more"><summary>📖 More on ${WT.label}: side content, items &amp; full text (${n} sections)</summary>${groups}</details>`;
+    return `<details class="more"><summary>${I("chevron", "more-chev")}${I("book")}More on ${WT.label}: side content, items &amp; full text (${n} sections)</summary>${groups}</details>`;
   }
 
   // ---------- rendering ----------
@@ -144,66 +152,139 @@
     }
     if (item === "-") item = "";
     name = V(name); types = V(types);
-    const src = sprite(name.split(" / ")[0]);
-    return `<div class="mon" data-mon="${esc(name.split(" / ")[0])}" title="Matchups for ${esc(name)}">${src ? `<img src="${src}" alt="" loading="lazy">` : ""}
+    const first = name.split(" / ")[0];
+    return `<div class="mon" data-mon="${esc(first)}" title="Matchups for ${esc(name)}">
+      <div class="mon-spr">${spriteImg(first)}</div>
       <span class="mn">${esc(name)}</span><span class="ml">Lv ${lvl}</span>${typePills(types)}
       ${item ? `<span class="mi">@ ${esc(item)}</span>` : ""}</div>`;
   }
 
+  // Battles: a framed "VS" panel with the trainer and their team.
   function renderBoss(b) {
     if (!b) return "";
     return `<div class="boss">
-      <div class="boss-who"><span>⚔ ${esc(V(b.who))}${b.rival ? ` <span class="rw">(team based on your ${(G.starter?.label || "starter").toLowerCase()})</span>` : ""}</span>${b.reward ? `<span class="rw">🏅 ${esc(V(b.reward))}</span>` : ""}</div>
+      <div class="vs-head"><span class="vs">VS</span><span class="who">${esc(V(b.who))}</span>${b.reward ? `<span class="rw">${I("badge")}${esc(V(b.reward))}</span>` : ""}</div>
+      ${b.rival ? `<div class="rv-note">Team based on your ${(G.starter?.label || "starter").toLowerCase()}</div>` : ""}
       <div class="team">${b.team.map(renderMon).join("")}</div>
-      <div class="use"><b class="lbl">Use:</b> ${V(b.use)}</div>
+      <div class="use"><b class="lbl">Use</b> ${V(b.use)}</div>
     </div>`;
   }
 
+  // Legendary encounters: the showpiece. Big sprite on an aura in its type colors, and a stamp once caught.
   function renderLegendCard(step) {
     const l = legendById(V(step.legend));
     if (!l) return "";
     const caught = S.caught.has(l.id);
-    return `<div class="legend-card">
-      <div class="spr"><img src="${sprite(l.name, true)}" alt="${l.name}" loading="lazy" onerror="this.onerror=null;this.src='${sprite(l.name)}'"></div>
-      <div>
-        <div><button type="button" class="ln" data-mon="${esc(l.name)}" title="Matchups for ${esc(l.name)}">${l.name}</button><span class="lv">Lv${l.lvl}</span></div>
+    const [t1, t2 = t1] = l.types.map((t) => TYPE_COLORS[t] || "#888");
+    return `<div class="legend-card ${caught ? "is-caught" : ""}" style="--aura:${t1};--aura-2:${t2}">
+      <div class="lc-stage">${spriteImg(l.name, l.name)}${caught ? `<span class="stamp">${I("check")}Caught</span>` : ""}</div>
+      <div class="lc-info">
+        <div class="lc-name"><button type="button" class="ln" data-mon="${esc(l.name)}" title="Matchups for ${esc(l.name)}">${l.name}</button><span class="lv">Lv${l.lvl}</span></div>
         ${typePills(l.types.join("/"))}
-        <div class="row"><b>Hit with:</b> ${l.hit}</div>
-        ${l.avoid ? `<div class="row"><b>Avoid:</b> ${l.avoid}</div>` : ""}
-        ${step.tactic ? `<div class="row"><b>Plan:</b> ${V(step.tactic)}</div>` : ""}
-        ${l.note ? `<div class="row"><b>Note:</b> ${l.note}</div>` : ""}
-        <button class="btn caught-btn ${caught ? "on" : ""}" data-catch="${l.id}">${caught ? "✓ Caught!" : "Mark as caught"}</button>
+        <div class="row"><b>Hit with</b> ${l.hit}</div>
+        ${l.avoid ? `<div class="row"><b>Avoid</b> ${l.avoid}</div>` : ""}
+        ${step.tactic ? `<div class="row"><b>Plan</b> ${V(step.tactic)}</div>` : ""}
+        ${l.note ? `<div class="row"><b>Note</b> ${l.note}</div>` : ""}
+        <button class="btn caught-btn ${caught ? "on" : ""}" data-catch="${l.id}">${caught ? `${I("check")}Caught` : `${I("ball")}Mark as caught`}</button>
       </div>
     </div>`;
   }
 
-  function renderStep(st) {
+  const mapBtn = (k, label) => `<button class="btn mapbtn" data-map="${k}" title="Show the ${esc(G.maps[k].name)} map">${I("map")}<span class="bl">${esc(label || G.maps[k].name)}</span></button>`;
+  const wtBtn = (ref, compact) => `<a class="btn wt${compact ? " ib" : ""}" href="${refUrl(ref)}" target="_blank" rel="noopener" title="Read this section on ${WT.label}">${I("book")}${compact ? "" : `<span class="bl">${WT.label}</span>`}</a>`;
+
+  // A location subheader: consecutive steps at the same `loc` share its map, region pin and
+  // Bulbapedia link, so they're shown once here instead of on every step.
+  function renderGroupHead(g) {
+    const k = g.mapKey, m = k && G.maps[k];
+    const ids = g.steps.map((s) => s.id).join(" ");
+    return `<div class="lg" data-lg="lg-${g.steps[0].id}" data-steps="${ids}" data-loc="${esc(g.loc)}">
+      <div class="lg-row">
+        ${m ? `<button class="lg-thumb" data-map="${k}" title="Show the ${esc(m.name)} map"><img src="${mapSrc(m)}" alt="" loading="lazy" referrerpolicy="no-referrer"></button>` : `<span class="lg-thumb none">${I("pin")}</span>`}
+        <h4 class="lg-name">${esc(g.loc || "")}</h4>
+        <div class="lg-actions">
+          ${m ? mapBtn(k, "Map") : ""}
+          ${G.pins[g.loc] && G.regionMaps ? `<button class="btn" data-mini="${esc(g.loc)}" title="Show ${esc(g.loc)} on the region map">${I("pin")}<span class="bl">Where is this?</span></button>` : ""}
+          ${g.ref && WT ? wtBtn(g.ref) : ""}
+        </div>
+      </div>
+      <div class="mini-slot"></div>
+    </div>`;
+  }
+
+  function renderStep(st, g) {
     const done = S.done.has(st.id);
-    const maps = stepMaps(st);
-    const mapBtns = maps.map((k) => `<button class="btn mapbtn" data-map="${k}"><img src="${mapSrc(G.maps[k])}" alt="" loading="lazy" referrerpolicy="no-referrer">🗺 ${G.maps[k].name} map</button>`).join("");
-    const pinBtn = G.pins[st.loc] ? `<button class="btn" data-mini="${esc(st.loc)}">📍 Where is this?</button>` : "";
-    // The location chip opens the inside map when the place has one, otherwise the region pin.
-    const locMap = MAP_BY_NAME.get(st.loc);
-    const locBtn = !st.loc ? ""
-      : locMap ? `<button class="loc" data-map="${locMap}" title="Show the ${esc(G.maps[locMap].name)} map">🗺 ${esc(st.loc)}</button>`
-      : `<button class="loc" data-mini="${esc(st.loc)}" title="Show on the region map">📍 ${esc(st.loc)}</button>`;
+    // Only buttons that differ from the location header's: a step-specific map (or the same map
+    // with this step's pin on it) and a different Bulbapedia section.
+    const ownPin = (k) => V(asList(st.map)[0]) === k && pinFor(st.mapPin);
+    const maps = stepMaps(st).filter((k) => k !== g.mapKey || ownPin(k));
+    const mapBtns = maps.map((k) => mapBtn(k, ownPin(k) && st.mapLabel ? `${G.maps[k].name}: ${V(st.mapLabel)}` : null)).join("");
+    const ownRef = st.ref && WT && V(st.ref) !== V(g.ref) ? wtBtn(st.ref, true) : "";
     const txt = (s) => linkPlaces(V(s), st.loc);
+    const actions = mapBtns;
     return `<article class="step ${done ? "done" : ""}" id="${st.id}" data-type="${st.type}">
-      <button class="check" data-step="${st.id}" aria-label="Mark done">✓</button>
-      <div>
-        <div class="s-top"><span class="tag">${TYPE_LABEL[st.type]}</span>${locBtn}</div>
-        <h3 class="s-title">${V(st.title)}</h3>
+      <button class="check" data-step="${st.id}" aria-label="Mark done">${I("check")}</button>
+      <div class="s-main">
+        <div class="s-top">${st.type !== "story" ? `<span class="tag">${I(TYPE_ICON[st.type])}${TYPE_LABEL[st.type]}</span>` : ""}<h3 class="s-title">${V(st.title)}</h3>${ownRef}</div>
         <div class="s-body">
-          ${st.text ? `<div>${txt(st.text)}</div>` : ""}
+          ${st.text ? `<div class="s-text">${txt(st.text)}</div>` : ""}
           ${st.type === "legend" ? renderLegendCard(st) : ""}
           ${renderBoss(st.boss)}
-          ${st.after ? `<div class="after">${txt(st.after)}</div>` : ""}
-          ${st.callout ? `<div class="callout">${txt(st.callout)}</div>` : ""}
-          <div class="s-actions">${mapBtns}${pinBtn}${st.ref && WT ? `<a class="btn wt" href="${refUrl(st.ref)}" target="_blank" rel="noopener" title="Read this section on ${WT.label}">📖 ${WT.label} ↗</a>` : ""}</div>
+          ${st.after ? `<div class="after s-text">${txt(st.after)}</div>` : ""}
+          ${st.callout ? `<div class="callout">${I("star")}<div>${txt(st.callout)}</div></div>` : ""}
+          ${actions ? `<div class="s-actions">${actions}</div>` : ""}
           <div class="mini-slot"></div>
         </div>
       </div>
     </article>`;
+  }
+
+  // Consecutive steps at the same location → one group.
+  function locGroups(steps) {
+    const out = [];
+    for (const st of steps) {
+      const last = out[out.length - 1];
+      if (last && last.loc === st.loc) last.steps.push(st);
+      else out.push({ loc: st.loc, steps: [st] });
+    }
+    for (const g of out) {
+      g.mapKey = MAP_BY_NAME.get(g.loc) || null;
+      g.ref = g.steps.find((s) => s.ref)?.ref || null;
+    }
+    return out;
+  }
+
+  // The gym a part ends in: its leader's type (most common type on their team), for the header accent.
+  function gymOf(ch) {
+    const gym = [...ch.steps].reverse().find((s) => s.boss && /\bGym Leader\b/.test(V(s.boss.who)));
+    if (!gym) return null;
+    const who = V(gym.boss.who).replace(/^Gym Leader /, "");
+    if (ch.gymType) return { type: ch.gymType, who };
+    const n = {};
+    for (const [, , t] of gym.boss.team) for (const x of String(V(t) || "").split("/")) if (x) n[x] = (n[x] || 0) + 1;
+    const type = Object.keys(n).sort((a, b) => n[b] - n[a])[0];
+    return type ? { type, who } : null;
+  }
+
+  function renderChapter(ch) {
+    const legs = ch.steps.filter((s) => s.type === "legend").map((s) => legendById(V(s.legend))?.name).filter(Boolean);
+    const req = requiredSteps(ch), nDone = req.filter((s) => S.done.has(s.id)).length;
+    const gym = gymOf(ch), gc = gym && TYPE_COLORS[gym.type];
+    return `<section class="chapter ${S.collapsed.has(ch.id) ? "collapsed" : ""} ${gc ? "has-gym" : ""}" id="${ch.id}"${gc ? ` style="--gym:${gc}"` : ""}>
+        <div class="ch-head">
+          <button class="ch-toggle" data-collapse="${ch.id}" aria-expanded="${!S.collapsed.has(ch.id)}" title="Collapse / expand (C)">${I("chevron")}</button>
+          <div class="ch-tabs"><span class="ch-part">${ch.part}</span><span class="ch-count">${nDone}/${req.length}</span></div>
+          <h2>${V(ch.title)}</h2>
+          <div class="ch-areas">${V(ch.areas)}</div>
+          <div class="ch-meta">
+            ${ch.badge ? `<span class="chip gym-chip"${gym ? ` title="${esc(gym.who)}: ${gym.type} type"` : ""}>${I("badge")}${V(ch.badge)}</span>` : ""}
+            ${legs.map((n) => `<span class="chip leg-chip">${I("star")}${n}</span>`).join("")}
+          </div>
+          ${ch.intro ? `<p class="ch-intro">${V(ch.intro)}</p>` : ""}
+          ${moreLinks(ch)}
+        </div>
+        ${locGroups(ch.steps).map((g) => renderGroupHead(g) + g.steps.map((st) => renderStep(st, g)).join("")).join("")}
+      </section>`;
   }
 
   function renderMain() {
@@ -211,28 +292,65 @@
     let shownPostBanner = false;
     for (const ch of G.chapters) {
       if (ch.postgame && !shownPostBanner && G.postgameBanner) {
-        html += `<div class="postgame-banner">${G.postgameBanner}</div>`;
+        html += `<div class="postgame-banner">${I("trophy")}<span>${G.postgameBanner}</span></div>`;
         shownPostBanner = true;
       }
-      const legs = ch.steps.filter((s) => s.type === "legend").map((s) => legendById(V(s.legend))?.name).filter(Boolean);
-      const req = requiredSteps(ch), nDone = req.filter((s) => S.done.has(s.id)).length;
-      html += `<section class="chapter ${S.collapsed.has(ch.id) ? "collapsed" : ""}" id="${ch.id}">
-        <div class="ch-head">
-          <button class="ch-toggle" data-collapse="${ch.id}" aria-expanded="${!S.collapsed.has(ch.id)}" title="Collapse / expand (C)">▾</button>
-          <div class="ch-part">${ch.part} <span class="ch-count">${nDone}/${req.length}</span></div>
-          <h2>${V(ch.title)}</h2>
-          <div class="ch-areas">${V(ch.areas)}</div>
-          <div class="ch-meta">
-            ${ch.badge ? `<span class="chip">🏅 ${V(ch.badge)}</span>` : ""}
-            ${legs.map((n) => `<span class="chip">★ ${n}</span>`).join("")}
-          </div>
-          ${ch.intro ? `<p class="ch-intro">${V(ch.intro)}</p>` : ""}
-          ${moreLinks(ch)}
-        </div>
-        ${ch.steps.map(renderStep).join("")}
-      </section>`;
+      html += renderChapter(ch);
     }
     $("#main").innerHTML = html;
+    $$(".chapter").forEach(foldRuns);
+  }
+
+  // ---------- runs of finished steps fold into one "✓ N steps done" row ----------
+  // Works on the flat list inside a part (location headers and steps). A header folds with its
+  // steps when all of them are done. A run you open stays open while you keep checking steps
+  // next to it (membership is remembered per step, so runs that grow or split keep their state).
+  const openRun = new Set();
+  const keyOf = (el) => el.id || el.dataset.lg;
+  const STEP_LOC = new Map(G.chapters.flatMap((c) => c.steps).map((s) => [s.id, s.loc]));
+  function foldRuns(sec) {
+    sec.querySelectorAll(":scope > .done-run").forEach((r) => r.remove());
+    const hiddenTip = (el) => !S.extras && el.dataset.type === "tip";
+    const isDone = (el) => el.classList.contains("lg")
+      ? el.dataset.steps.split(" ").every((id) => { const s = document.getElementById(id); return !s || hiddenTip(s) || s.classList.contains("done"); })
+      : el.classList.contains("done");
+    const runs = [];
+    let cur = null;
+    for (const el of sec.querySelectorAll(":scope > .lg, :scope > .step")) {
+      el.classList.remove("folded", "in-run");
+      if (el.classList.contains("step") && hiddenTip(el)) continue; // hidden tips don't break a run
+      if (isDone(el)) { if (!cur) runs.push((cur = [])); cur.push(el); } else cur = null;
+    }
+    for (const run of runs) {
+      const steps = run.filter((el) => el.classList.contains("step"));
+      if (!steps.length) continue;
+      const open = run.some((el) => openRun.has(keyOf(el)));
+      if (open) run.forEach((el) => openRun.add(keyOf(el)));
+      run.forEach((el) => el.classList.add(open ? "in-run" : "folded"));
+      const locs = [...new Set(steps.map((s) => STEP_LOC.get(s.id)).filter(Boolean))];
+      run[0].insertAdjacentHTML("beforebegin", `<button type="button" class="done-run ${open ? "open" : ""}" data-run="${keyOf(run[0])}" aria-expanded="${open}" title="${open ? "Fold these finished steps" : "Show these finished steps"}">
+        <span class="dr-check">${I("check")}</span><span class="dr-n">${steps.length} step${steps.length > 1 ? "s" : ""} done</span>
+        <span class="dr-locs">${esc(locs.join(" · "))}</span>${I("chevron", "dr-chev")}</button>`);
+    }
+  }
+  function runMembers(btn) {
+    const out = [];
+    for (let el = btn.nextElementSibling; el && !el.classList.contains("done-run"); el = el.nextElementSibling) {
+      if (el.classList.contains("folded") || el.classList.contains("in-run")) out.push(el);
+      else if (!(el.classList.contains("step") && !S.extras && el.dataset.type === "tip")) break;
+    }
+    return out;
+  }
+  function toggleRun(btn, open = btn.getAttribute("aria-expanded") !== "true") {
+    runMembers(btn).forEach((el) => (open ? openRun.add(keyOf(el)) : openRun.delete(keyOf(el))));
+    foldRuns(btn.closest(".chapter"));
+  }
+  // Make sure a step is on screen: open the run it's folded into.
+  function unfold(el) {
+    if (!el.classList.contains("folded")) return;
+    let r = el.previousElementSibling;
+    while (r && !r.classList.contains("done-run")) r = r.previousElementSibling;
+    if (r) toggleRun(r, true);
   }
 
   const chapterGroup = (ch) => ch.group || (ch.postgame ? "Post-game" : "Main story");
@@ -247,15 +365,15 @@
       const stars = ch.steps.filter((s) => s.type === "legend").length;
       const full = d === req.length;
       html += `<div class="nav-item ${full ? "complete" : ""}" data-ch="${ch.id}">
-        <button class="pcheck" data-part="${ch.id}" title="${full ? "Uncheck" : "Check off"} all of ${esc(ch.part)}" aria-label="Check off ${esc(ch.part)}">✓</button>
+        <button class="pcheck" data-part="${ch.id}" title="${full ? "Uncheck" : "Check off"} all of ${esc(ch.part)}" aria-label="Check off ${esc(ch.part)}">${I("check")}</button>
         <a class="nav-link" href="#${ch.id}">
           <span class="np">${ch.part}</span><span class="nt">${V(ch.title)}</span>
           <span class="na">${V(ch.areas)}</span>
-          <span class="nc">${d}/${req.length} steps${stars ? ` · <span class="stars">${"★".repeat(stars)}</span>` : ""}</span>
+          <span class="nc">${d}/${req.length} steps${stars ? ` · <span class="stars">${I("star").repeat(stars)}</span>` : ""}</span>
         </a></div>`;
     }
-    html += `<div class="key">${Object.entries(TYPE_LABEL).map(([k, v]) =>
-      `<span class="tag" style="background:var(--t-${k});${k === "legend" ? "color:#2a1d00" : ""}">${v}</span>`).join("")}</div>`;
+    html += `<div class="key">${Object.entries(TYPE_LABEL).filter(([k]) => k !== "story").map(([k, v]) =>
+      `<span class="tag" data-k="${k}">${I(TYPE_ICON[k])}${v}</span>`).join("")}</div>`;
     $("#nav").innerHTML = html;
   }
 
@@ -263,17 +381,17 @@
     const list = legendsForVersion();
     const n = list.filter((l) => S.caught.has(l.id)).length;
     const row = (l) => `<div class="trow ${S.caught.has(l.id) ? "caught" : ""}" data-goto="${l.step}">
-      <img src="${sprite(l.name)}" alt="">
+      <span class="t-spr"><img class="sp png" src="${sprite(l.name)}" alt="" loading="lazy"></span>
       <div><div class="tn">${l.name} <span class="tl">Lv${l.lvl}</span></div>
       <div class="tw">${esc(l.where)}${l.requires ? ` · <i>${V(l.requires)}</i>` : ""}</div>
-      ${l.other && l.native && l.native !== S.ver ? `<div class="tw">⚠ ${l.other}</div>` : ""}</div>
-      <button class="tc" data-catch="${l.id}" title="Toggle caught">✓</button></div>`;
+      ${l.other && l.native && l.native !== S.ver ? `<div class="tw tw-warn">${I("warn")}${l.other}</div>` : ""}</div>
+      <button class="tc" data-catch="${l.id}" title="Toggle caught">${I("check")}</button></div>`;
     const story = list.filter((l) => l.phase === "story"), post = list.filter((l) => l.phase === "post");
     $("#dexCount").textContent = `${n}/${list.length}`;
     $("#tracker").innerHTML = `
       <div class="panel">
-        <button class="btn drawer-close" data-drawer="close" aria-label="Close">✕</button>
-        <h3>Legendary Dex</h3>
+        <button class="btn ib drawer-close" data-drawer="close" aria-label="Close">${I("close")}</button>
+        <h3>${I("star")}Legendary Dex</h3>
         <div class="count">${n}<small> / ${list.length} catchable in ${verLabel()}</small></div>
         <div class="dexbar"><div style="width:${list.length ? (n / list.length) * 100 : 0}%"></div></div>
         ${story.length ? `<div class="tgroup">During the story</div>${story.map(row).join("")}` : ""}
@@ -293,6 +411,8 @@
   function applyTheme() {
     const v = G.versions[verIndex()], root = document.documentElement.style;
     document.body.dataset.mode = v.mode;
+    document.body.dataset.skin = G.skin || "gen5";
+    document.body.dataset.version = v.id; // (not data-ver: that attribute marks the version buttons)
     root.setProperty("--accent", v.accent); root.setProperty("--accent-2", v.accent2); root.setProperty("--accent-ink", v.ink);
   }
 
@@ -458,8 +578,8 @@
       <div class="pin" hidden><span></span></div>
       <div class="cap">${esc(caption)}</div>
       <div class="mm-tools">
-        <button type="button" data-z="in" title="Zoom in">+</button><button type="button" data-z="out" title="Zoom out">−</button>
-        <button type="button" data-z="home" title="${pin ? "Back to the pin" : "Fit the whole map"}">⌖</button><button type="button" data-z="full" title="Full screen">⤢</button>
+        <button type="button" data-z="in" title="Zoom in" aria-label="Zoom in">${I("plus")}</button><button type="button" data-z="out" title="Zoom out" aria-label="Zoom out">${I("minus")}</button>
+        <button type="button" data-z="home" title="${pin ? "Back to the pin" : "Fit the whole map"}" aria-label="${pin ? "Back to the pin" : "Fit the whole map"}">${I(pin ? "target" : "fit")}</button><button type="button" data-z="full" title="Full screen" aria-label="Full screen">${I("expand")}</button>
       </div>
       <div class="mm-hint">${touchUI ? "Tap to open full screen" : "Drag to move · scroll to zoom · double-click zooms in"}</div>
     </div>`;
@@ -491,10 +611,13 @@
     });
   }
 
+  // Maps open under the button's step, or under its location header.
+  const mapHost = (btn) => btn.closest(".step, .lg");
+  const slotOf = (host) => host.querySelector(".mini-slot");
   function toggleRegion(btn, loc = btn.dataset.mini) {
-    const step = btn.closest(".step");
-    if (step.classList.contains("done") || !G.regionMaps) return;
-    inlineMap(step.querySelector(".mini-slot"), "region:" + loc, {
+    const host = mapHost(btn);
+    if (host.classList.contains("done") || !G.regionMaps) return;
+    inlineMap(slotOf(host), "region:" + loc, {
       src: regionSrc(), full: regionSrc(true), pin: G.pins[loc],
       caption: `${loc} (approx.)`, title: `${loc} · ${G.regionName || "Region"}`,
     });
@@ -502,11 +625,11 @@
 
   // A step's location map. The step's mapPin/mapLabel apply to its own `map` (the first one listed).
   function toggleLocationMap(btn, key = btn.dataset.map) {
-    const step = btn.closest(".step");
-    const st = G.chapters.flatMap((c) => c.steps).find((x) => x.id === step.id);
-    const m = G.maps[key], own = V(asList(st.map)[0]) === key;
+    const host = mapHost(btn);
+    const st = host.classList.contains("step") ? G.chapters.flatMap((c) => c.steps).find((x) => x.id === host.id) : null;
+    const m = G.maps[key], own = st && V(asList(st.map)[0]) === key;
     const pin = own ? pinFor(st.mapPin) : null, label = own && pin && st.mapLabel ? V(st.mapLabel) : "";
-    inlineMap(step.querySelector(".mini-slot"), "map:" + key, {
+    inlineMap(slotOf(host), "map:" + key, {
       src: mapSrc(m), full: mapSrc(m, true), pin, scale: 2.4,
       caption: label ? `${m.name}: ${label}` : m.name,
       title: label ? `${m.name} · ${label}` : m.name,
@@ -518,7 +641,7 @@
     const n = btn.dataset.xref;
     if (MAP_BY_NAME.has(n)) toggleLocationMap(btn, MAP_BY_NAME.get(n));
     else toggleRegion(btn, n);
-    btn.closest(".step").querySelector(".mini-slot").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    slotOf(mapHost(btn)).scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
   // ---------- full-screen lightbox ----------
@@ -575,14 +698,16 @@
     const sec = el.closest(".chapter");
     if (sec?.classList.contains("collapsed")) { S.collapsed.delete(sec.id); save(); sec.classList.remove("collapsed"); }
     if (el.classList.contains("done") && S.hideDone) { S.hideDone = false; save(); renderAll(); return flashTo(id, instant); }
+    unfold(el);
     el.scrollIntoView({ behavior: instant ? "instant" : "smooth", block: "start" });
     el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
   }
 
   // ---------- events ----------
   document.addEventListener("click", (e) => {
-    const t = e.target.closest("[data-step],[data-catch],[data-map],[data-mini],[data-xref],[data-goto],[data-ver],[data-part],[data-collapse],[data-drawer],[data-mon]");
+    const t = e.target.closest("[data-step],[data-catch],[data-map],[data-mini],[data-xref],[data-goto],[data-ver],[data-part],[data-collapse],[data-drawer],[data-mon],[data-run]");
     if (!t) return;
+    if (t.dataset.run) { toggleRun(t); return; }
     if (t.dataset.mon) { window.TypeTool?.open(t.dataset.mon); return; }
     if (t.dataset.collapse) { toggleCollapse(t.dataset.collapse); return; }
     if (t.dataset.drawer) { setDrawer(false); return; }
@@ -603,6 +728,7 @@
       el.classList.toggle("done", S.done.has(id));
       const ch = G.chapters.find((c) => c.steps.some((x) => x.id === id)), req = requiredSteps(ch);
       el.closest(".chapter").querySelector(".ch-count").textContent = `${req.filter((x) => S.done.has(x.id)).length}/${req.length}`;
+      foldRuns(el.closest(".chapter"));
       renderNav(); updateProgress(); observeChapters(); return;
     }
     if (t.dataset.part) {
@@ -654,6 +780,18 @@
   $("#drawerBackdrop").onclick = () => setDrawer(false);
   drawerMQ.addEventListener("change", () => setDrawer(false));
 
+  // ---------- View menu (Show extras, Hide done, Sync, shortcuts) ----------
+  const menu = $("#viewMenu"), menuBtn = $("#menuBtn");
+  function setMenu(open) {
+    menu.hidden = !open;
+    menuBtn.setAttribute("aria-expanded", String(open));
+  }
+  menuBtn.onclick = (e) => { e.stopPropagation(); setMenu(menu.hidden); };
+  document.addEventListener("click", (e) => { if (!menu.hidden && !e.target.closest(".menu-wrap")) setMenu(false); });
+  // Items that open something close the menu; the two checkboxes leave it open.
+  menu.addEventListener("click", (e) => { if (e.target.closest("button, a")) setMenu(false); });
+  menu.addEventListener("keydown", (e) => { if (e.key === "Escape") { setMenu(false); menuBtn.focus(); } });
+
   // ---------- keyboard shortcuts (desktop) ----------
   const kbdDlg = $("#kbdDlg");
   $("#kbdBtn").onclick = () => kbdDlg.showModal();
@@ -667,9 +805,17 @@
     el.classList.add("kfocus"); focusId = el.id;
     el.scrollIntoView({ behavior: "smooth", block: "center" });
   }
+  // A step's location header: the nearest .lg before it.
+  function groupOf(st) {
+    let el = st?.previousElementSibling;
+    while (el && !el.classList.contains("lg")) el = el.previousElementSibling;
+    return el;
+  }
   function currentStep() {
     const el = focusId && document.getElementById(focusId);
     if (el && el.offsetParent !== null) return el;
+    // a focused step that folded away: the next step still showing after it
+    if (el) { const after = visibleSteps().find((x) => el.compareDocumentPosition(x) & Node.DOCUMENT_POSITION_FOLLOWING); if (after) return after; }
     // otherwise: the first step visible near the top of the screen
     return visibleSteps().find((x) => x.getBoundingClientRect().bottom > 140) || null;
   }
@@ -684,16 +830,20 @@
     if ($("dialog[open]")) return;
     if (!lb.hidden) return;
     const k = e.key;
-    if (k === "Escape") { setDrawer(false); $$(".step.kfocus").forEach((x) => x.classList.remove("kfocus")); focusId = null; return; }
+    if (k === "Escape") { setDrawer(false); setMenu(false); $$(".step.kfocus").forEach((x) => x.classList.remove("kfocus")); focusId = null; return; }
     if (k === "?") { kbdDlg.showModal(); e.preventDefault(); return; }
     const steps = visibleSteps(), cur = currentStep(), i = cur ? steps.indexOf(cur) : -1;
     switch (k.toLowerCase()) {
-      case "j": focusStep(focusId ? steps[Math.min(i + 1, steps.length - 1)] : cur); break;
+      case "j": { // a focused step that just folded away hands focus to the next one still showing
+        const f = focusId && document.getElementById(focusId);
+        focusStep(f && f.offsetParent === null ? cur : focusId ? steps[Math.min(i + 1, steps.length - 1)] : cur); break;
+      }
       case "k": focusStep(focusId ? steps[Math.max(i - 1, 0)] : cur); break;
       case "x": case " ": if (cur) { cur.querySelector(".check").click(); focusId = cur.id; cur.classList.add("kfocus"); } break;
       case "n": $("#nextBtn").click(); break;
-      case "m": cur?.querySelector("[data-map], .s-actions [data-mini]")?.click(); break;
-      case "b": { const a = cur?.querySelector("a.wt"); if (a) window.open(a.href, "_blank", "noopener"); break; }
+      // The step's own map / Bulbapedia button, else its location header's.
+      case "m": (cur?.querySelector(".s-actions [data-map]") || groupOf(cur)?.querySelector(".lg-actions [data-map], .lg-actions [data-mini]"))?.click(); break;
+      case "b": { const a = cur?.querySelector("a.wt") || groupOf(cur)?.querySelector("a.wt"); if (a) window.open(a.href, "_blank", "noopener"); break; }
       case "c": { const ch = currentChapter(); if (ch) toggleCollapse(ch.id); break; }
       case "]": case "[": {
         const chs = $$(".chapter"), c = currentChapter(), j = chs.indexOf(c) + (k === "]" ? 1 : -1);
@@ -714,7 +864,8 @@
   function paintSync(state, msg) {
     const offline = !navigator.onLine;
     $("#syncBtn").dataset.state = offline ? "offline" : state;
-    $("#syncBtn .lbl").textContent = offline ? "Offline" : "☁ Sync";
+    $("#syncBtn .lbl").textContent = offline ? "Offline" : "Sync";
+    $("#menuBtn").dataset.sync = offline ? "offline" : state;
     $("#syncBtn").title = offline
       ? "You're offline. The guide keeps working, and your progress is saved on this device" + (Sync.connected ? " and syncs when you're back online." : ".")
       : "Sync, backup & offline";

@@ -82,6 +82,7 @@ const CHAPTERS = [
 window.GAME = {
   id: "template",
   gen: 6,                 // game generation: picks the Types panel's chart (Fairy from 6) and typings
+  skin: "kalos",          // look: "gen5" (B2W2's DS menu panels) or "kalos" (X & Y); themes live in css/style.css
   title: "Game Route",
   tagline: "",
   versions: [
