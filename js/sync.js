@@ -99,6 +99,8 @@
 
   async function syncNow() {
     if (!token()) return setStatus("off");
+    // Offline: progress is already saved on this device; it goes up when the connection is back.
+    if (!navigator.onLine) return setStatus("offline", "Offline. Your progress is saved on this device and syncs when you're back online.");
     setStatus("syncing");
     try {
       const changed = await pull();
@@ -136,7 +138,9 @@
     },
   };
 
-  // Pull on load and whenever the tab comes back into view.
+  // Pull on load, whenever the tab comes back into view, and when the connection returns.
   if (token()) queue(syncNow);
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && token()) queue(syncNow); });
+  addEventListener("online", () => { if (token()) queue(syncNow); });
+  addEventListener("offline", () => { if (token()) queue(syncNow); });
 })();

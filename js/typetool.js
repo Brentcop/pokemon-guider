@@ -65,7 +65,30 @@ window.TypeTool = (() => {
       return `<td class="m${String(x).replace(".", "")}" title="${a} → ${d}: ${fmt(x)}">${x === 1 ? "" : fmt(x).replace("×", "")}</td>`;
     }).join("")}</tr>`).join("");
     $("#ttChart").innerHTML = `<table class="tt-table">${head}${body}</table>
-      <p class="tt-note">Gen ${gen} chart${gen < 6 ? " (no Fairy type; Steel also resists Ghost and Dark)" : ""}. Rows attack, columns defend. Hover a cell for details.</p>`;
+      <p class="tt-note">Gen ${gen} chart${gen < 6 ? " (no Fairy type; Steel also resists Ghost and Dark)" : ""}. Rows attack, columns defend. Hover to highlight a row and column; click to keep it highlighted.</p>`;
+    crosshair($("#ttChart table"));
+  }
+
+  // Highlight the hovered cell's whole row and column. Clicking pins it (tap on phones);
+  // clicking the same spot again unpins. A type header highlights just its row or column.
+  function crosshair(tbl) {
+    let pinned = null;
+    const mark = (r, c) => {
+      for (const row of tbl.rows) for (const cell of row.cells) {
+        const inRow = r > 0 && row.rowIndex === r, inCol = c > 0 && cell.cellIndex === c;
+        cell.classList.toggle("hl", inRow || inCol);
+        cell.classList.toggle("hx", inRow && inCol);
+      }
+    };
+    const at = (e) => { const cell = e.target.closest("td, th"); return cell && [cell.parentNode.rowIndex, cell.cellIndex]; };
+    tbl.addEventListener("mouseover", (e) => { const p = at(e); if (p && !pinned) mark(...p); });
+    tbl.addEventListener("mouseleave", () => mark(...(pinned || [-1, -1])));
+    tbl.addEventListener("click", (e) => {
+      const p = at(e); if (!p) return;
+      pinned = pinned && pinned[0] === p[0] && pinned[1] === p[1] ? null : p;
+      tbl.classList.toggle("pinned", !!pinned);
+      mark(...(pinned || p));
+    });
   }
 
   // ---------- wiring ----------

@@ -481,12 +481,13 @@
       }
     };
     img.complete && img.naturalWidth ? ready() : img.addEventListener("load", ready, { once: true });
+    img.addEventListener("error", () => { if (!mm.classList.contains("ready")) mm.classList.add("failed"); }, { once: true });
     mm.addEventListener("click", (e) => {
       const z = e.target.closest("[data-z]")?.dataset.z;
       if (z === "in") pz.zoomBy(1.5);
       else if (z === "out") pz.zoomBy(1 / 1.5);
       else if (z === "home") pz.home();
-      else if (z === "full" || (!z && pz.tapIsTouch)) openLightbox(full, title, pin);
+      else if (z === "full" || (!z && pz.tapIsTouch)) openLightbox(full, title, pin, src);
     });
   }
 
@@ -524,12 +525,14 @@
   const lb = $("#lightbox"), stage = $("#lbStage"), lbImg = $("#lbImg");
   const lbView = panZoom(stage, lbImg, $("#lbPin"));
   let lbPinNow = null;
-  function openLightbox(src, title, pin) {
+  // `fallback`: a smaller copy to show if the full-size one can't load (e.g. offline, not saved).
+  function openLightbox(src, title, pin, fallback) {
     lb.hidden = false; document.body.style.overflow = "hidden";
     $("#lbTitle").textContent = title; $("#lbOpen").href = src;
     lbPinNow = pin || null;
     lbView.setImage(0, 0, null);
     lbImg.onload = () => lbView.setImage(lbImg.naturalWidth, lbImg.naturalHeight, lbPinNow);
+    lbImg.onerror = () => { if (fallback && fallback !== src && !lbImg.src.endsWith(fallback)) lbImg.src = fallback; };
     lbImg.src = src;
     if (lbImg.complete && lbImg.naturalWidth) lbImg.onload();
   }
@@ -619,7 +622,7 @@
   $("#starter").onchange = (e) => { S.starter = e.target.value; save(); renderAll(); };
   $("#extras").onchange = (e) => { S.extras = e.target.checked; save(); renderAll(); };
   $("#hideDone").onchange = (e) => { S.hideDone = e.target.checked; save(); renderAll(); };
-  $("#regionBtn").onclick = () => openLightbox(regionSrc(true), `${G.regionName || "Region"} · ${verLabel()}`);
+  $("#regionBtn").onclick = () => openLightbox(regionSrc(true), `${G.regionName || "Region"} · ${verLabel()}`, null, regionSrc());
   // Where you left off: the first unchecked step after the last one you checked
   // (skipped steps further back don't pull you away from where you are).
   function resumeStep() {
@@ -709,18 +712,83 @@
   const syncDlg = $("#syncDlg");
   const STATUS_TEXT = { off: "Not connected", pending: "Changes waiting…", syncing: "Syncing…", ok: "Synced", error: "Sync error" };
   function paintSync(state, msg) {
-    $("#syncBtn").dataset.state = state;
+    const offline = !navigator.onLine;
+    $("#syncBtn").dataset.state = offline ? "offline" : state;
+    $("#syncBtn .lbl").textContent = offline ? "Offline" : "☁ Sync";
+    $("#syncBtn").title = offline
+      ? "You're offline. The guide keeps working, and your progress is saved on this device" + (Sync.connected ? " and syncs when you're back online." : ".")
+      : "Sync, backup & offline";
     $("#syncState").textContent = msg || STATUS_TEXT[state] || "";
     $("#syncState").dataset.state = state;
     $("#syncConnect").hidden = Sync.connected;
     $("#syncConnected").hidden = !Sync.connected;
   }
   Sync.onStatus(paintSync);
+  for (const ev of ["online", "offline"]) addEventListener(ev, () => { paintSync($("#syncState").dataset.state || "off"); paintOffline(); });
+
+  // ---------- offline: saved guide + maps ----------
+  const MEDIA_CACHE = "pg-media-v1";
+  // Every map image for this game (both versions): what inline maps show, plus full-size if asked.
+  function allMapUrls(full) {
+    const out = new Set(), vers = G.versions.map((v) => v.id), keep = S.ver;
+    for (const v of vers) {
+      S.ver = v; // mapSrc/V pick the version's file
+      for (const m of [...Object.values(G.maps || {}), ...(G.regionMaps ? [G.regionMaps[v]] : [])]) {
+        out.add(mapSrc(m));
+        if (full && m.drive) out.add(mapSrc(m, true));
+      }
+    }
+    S.ver = keep;
+    return [...out];
+  }
+  async function savedCount(urls) {
+    if (!("caches" in window)) return 0;
+    const c = await caches.open(MEDIA_CACHE);
+    return (await Promise.all(urls.map((u) => c.match(u)))).filter(Boolean).length;
+  }
+  let saving = false;
+  async function paintOffline() {
+    const sw = "serviceWorker" in navigator && location.protocol.startsWith("http");
+    const ready = sw && !!navigator.serviceWorker.controller;
+    $("#offState").textContent = !sw ? "Not available" : ready ? (navigator.onLine ? "✓ Ready" : "✓ Working offline") : "Setting up…";
+    $("#offState").dataset.state = ready ? "ok" : "";
+    $("#offText").textContent = !sw
+      ? "Offline mode needs the guide opened from a web address (not as a file)."
+      : "The guide is saved on this device, so it opens and works without internet. Maps are saved as you view them, or save them all now.";
+    $("#offSave").hidden = $("#offFull").parentNode.hidden = !sw;
+    if (!sw || saving) return;
+    const base = allMapUrls(false), full = allMapUrls(true);
+    const [nb, nf] = await Promise.all([savedCount(base), savedCount(full)]);
+    $("#offMaps").textContent = `Maps saved: ${nb} of ${base.length}` + (nf > nb ? ` (plus ${nf - nb} full-size)` : "") + ".";
+    $("#syncBtn").classList.toggle("offline-ready", ready && nb === base.length);
+  }
+  $("#offSave").onclick = async () => {
+    if (saving || !navigator.onLine) { if (!navigator.onLine) alert("Connect to the internet to save the maps."); return; }
+    saving = true;
+    const btn = $("#offSave"), urls = allMapUrls($("#offFull").checked);
+    let done = 0, failed = 0;
+    btn.disabled = true;
+    navigator.storage?.persist?.(); // ask the browser not to clear it when space runs low
+    const next = async () => {
+      while (urls.length) {
+        const u = urls.shift();
+        try { const r = await fetch(u, { mode: "cors", credentials: "omit", referrerPolicy: "no-referrer" }); if (!r.ok) failed++; await r.blob(); }
+        catch { failed++; }
+        btn.textContent = `Saving maps… ${++done}`;
+      }
+    };
+    await Promise.all([next(), next(), next(), next()]); // 4 at a time
+    saving = false; btn.disabled = false;
+    btn.textContent = failed ? `Saved, ${failed} failed. Try again` : "✓ All maps saved";
+    paintOffline();
+  };
+  navigator.serviceWorker?.addEventListener?.("controllerchange", paintOffline);
+  setTimeout(paintOffline, 1500); // sets the "all maps saved" mark on the Sync button
   Sync.onRemoteChange(() => {
     loadState(); renderAll();
     if (!userMoved) resume(); // newer progress from another device arrived before you started scrolling
   });
-  $("#syncBtn").onclick = () => { $("#codeOut").value = Sync.exportCode(); $("#codeIn").value = ""; syncDlg.showModal(); };
+  $("#syncBtn").onclick = () => { $("#codeOut").value = Sync.exportCode(); $("#codeIn").value = ""; syncDlg.showModal(); paintOffline(); };
   $("#syncClose").onclick = () => syncDlg.close();
   syncDlg.addEventListener("click", (e) => { if (e.target === syncDlg) syncDlg.close(); });
   $("#tokenSave").onclick = async () => {

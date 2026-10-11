@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Route Guide</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=14">
+<link rel="stylesheet" href="css/style.css?v=15">
 </head>
 <body data-mode="dark">
 <header class="topbar">
@@ -27,7 +27,7 @@
     <button class="btn" id="typesBtn" title="Type chart and Pokémon matchups (T)">⚔ Types</button>
     <button class="btn dex-btn" id="dexBtn" title="Legendary Dex (D)">★ Dex <span id="dexCount"></span></button>
     <button class="btn kbd-btn" id="kbdBtn" title="Keyboard shortcuts (?)">⌨</button>
-    <button class="btn sync-btn" id="syncBtn" title="Sync progress across devices" data-state="off"><span class="dot"></span>☁ Sync</button>
+    <button class="btn sync-btn" id="syncBtn" title="Sync, backup &amp; offline" data-state="off"><span class="dot"></span><span class="lbl">☁ Sync</span></button>
   </div>
   <div class="progress"><div class="bar" id="bar"></div></div>
 </header>
@@ -59,7 +59,7 @@
 </div>
 
 <dialog class="sync-dlg" id="syncDlg">
-  <div class="sd-head"><h2>☁ Sync &amp; backup</h2><button class="btn" id="syncClose">✕</button></div>
+  <div class="sd-head"><h2>☁ Sync, backup &amp; offline</h2><button class="btn" id="syncClose">✕</button></div>
   <p class="sd-note">Progress for <b>all games</b> is saved together.</p>
 
   <section class="sd-sec">
@@ -77,6 +77,14 @@
       <p>This device is connected. Changes sync a few seconds after you make them, and again whenever you come back to the page.</p>
       <div class="sd-row"><button class="btn primary" id="syncNow">Sync now</button><button class="btn" id="syncOff">Disconnect this device</button></div>
     </div>
+  </section>
+
+  <section class="sd-sec">
+    <h3>Offline <span class="sd-state" id="offState"></span></h3>
+    <p id="offText">The guide saves itself on this device so it opens without internet. Maps are saved as you view them.</p>
+    <p class="sd-fine" id="offMaps"></p>
+    <label class="sd-check"><input type="checkbox" id="offFull"> Include full-size maps (sharper when zoomed in full screen; about 80 MB more)</label>
+    <div class="sd-row"><button class="btn primary" id="offSave">Save all maps for offline</button></div>
   </section>
 
   <section class="sd-sec">
@@ -126,10 +134,10 @@
 
 <footer class="foot" id="foot"></footer>
 
-<script src="games/registry.js?v=14"></script>
-<script src="assets/dex.js?v=14"></script>
-<script src="assets/pokedex.js?v=14"></script>
-<script src="assets/types.js?v=14"></script>
+<script src="games/registry.js?v=15"></script>
+<script src="assets/dex.js?v=15"></script>
+<script src="assets/pokedex.js?v=15"></script>
+<script src="assets/types.js?v=15"></script>
 <script>
   // Load the requested game module, then the shared renderer.
   (() => {
@@ -137,10 +145,12 @@
     const entry = GAMES.find((g) => g.id === id && g.status === "ready");
     if (!entry) { location.replace("index.html"); return; }
     // Bump BUILD on every release so browsers (and GitHub Pages' cache) fetch fresh files.
-    const BUILD = "14";
+    const BUILD = "15";
     const load = (src) => new Promise((ok, fail) => {
       const s = document.createElement("script"); s.src = `${src}?v=${BUILD}`; s.onload = ok; s.onerror = fail; document.body.appendChild(s);
     });
+    // Offline support (only works over http/https, not when opened as a file).
+    if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(() => {});
     load(`games/${id}/data.js`).then(() => load("js/md5.js")).then(() => load("js/sync.js")).then(() => load("js/app.js")).then(() => load("js/typetool.js"))
       .catch(() => { document.getElementById("main").textContent = `Couldn't load games/${id}/data.js`; });
   })();

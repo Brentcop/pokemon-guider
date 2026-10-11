@@ -265,6 +265,7 @@ body:not(.extras) .step[data-type="tip"] { display: none; }
   user-select: none; -webkit-user-drag: none; pointer-events: none;
 }
 .minimap:not(.ready) img { visibility: hidden; }
+.minimap.failed::before { content: "Couldn't load this map. If you're offline, it wasn't saved yet (Sync → Save all maps)." !important; padding: 0 20px; text-align: center; }
 .minimap:not(.ready)::before {
   content: "Loading map…"; position: absolute; inset: 0; display: grid; place-items: center; color: #9ab; font-size: 13px;
 }
@@ -413,6 +414,11 @@ a.hub-card:hover { transform: translateY(-3px); border-color: var(--accent); }
 .sync-btn[data-state="ok"] .dot { background: var(--t-prep); }
 .sync-btn[data-state="pending"] .dot, .sync-btn[data-state="syncing"] .dot { background: var(--t-legend); animation: pulse 1s infinite; }
 .sync-btn[data-state="error"] .dot { background: var(--t-boss); }
+.sync-btn[data-state="offline"] { border-color: var(--t-legend); }
+.sync-btn[data-state="offline"] .dot { background: transparent; box-shadow: inset 0 0 0 2px var(--t-legend); }
+.sync-btn.offline-ready::after { content: "⬇"; font-size: 10px; margin-left: 5px; opacity: .7; } /* every map saved for offline */
+.sd-check { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; margin-top: 8px; }
+.sd-check input { margin-top: 3px; }
 @keyframes pulse { 50% { opacity: .3; } }
 .sync-dlg {
   width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 40px); overflow: auto;
@@ -518,7 +524,11 @@ a.hub-card:hover { transform: translateY(-3px); border-color: var(--accent); }
 .tt-table { border-collapse: collapse; font-size: 11px; margin: 0 auto; }
 .tt-table th, .tt-table td { border: 1px solid var(--line); width: 30px; height: 26px; text-align: center; padding: 0; }
 .tt-table td { font-weight: 800; }
-.tt-table tr:hover td, .tt-table td:hover { outline: 1px solid var(--accent); }
+/* Crosshair: hover (or click to pin) highlights the whole row and column */
+.tt-table td, .tt-table th { cursor: pointer; }
+.tt-table td.hl { box-shadow: inset 0 0 0 999px color-mix(in srgb, var(--accent) 28%, transparent); }
+.tt-table th.hl { filter: brightness(1.2); box-shadow: inset 0 0 0 2px var(--text); }
+.tt-table td.hx { outline: 2px solid var(--accent); outline-offset: -2px; box-shadow: inset 0 0 0 999px color-mix(in srgb, var(--accent) 45%, transparent); }
 .tt-col { background: var(--c); color: #fff; position: sticky; top: 0; z-index: 1; }
 .tt-col span { display: inline-block; font-size: 9.5px; font-weight: 800; text-transform: uppercase; }
 .tt-rowh { background: var(--c); color: #fff; text-align: left !important; padding: 0 6px !important; width: auto !important;

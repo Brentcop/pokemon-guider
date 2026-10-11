@@ -16,6 +16,7 @@
 <main class="hub-grid" id="grid"></main>
 <script src="games/registry.js?v=7"></script>
 <script>
+  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(() => {});
   // Remember the last guide opened so the home page can highlight it.
   let last = null;
   try { last = localStorage.getItem("pg.lastGame"); } catch {}
