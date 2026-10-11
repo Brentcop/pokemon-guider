@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pokémon Route Guides</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=17">
+<link rel="stylesheet" href="css/style.css?v=18">
 </head>
 <body class="hub" data-mode="dark" data-skin="gen5">
 <header class="hub-head">
@@ -20,14 +20,15 @@
   <div id="hero"></div>
   <div id="others"></div>
 </main>
-<script src="js/icons.js?v=17"></script>
-<script src="games/registry.js?v=17"></script>
+<script src="js/icons.js?v=18"></script>
+<script src="games/registry.js?v=18"></script>
 <script>
   if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(() => {});
   (() => {
     const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-    let last = null;
-    try { last = localStorage.getItem("pg.lastGame"); } catch {}
+    let last = null, dark = null;
+    try { last = localStorage.getItem("pg.lastGame"); dark = localStorage.getItem("pg.dark"); } catch {}
+    if (dark === "0") document.body.dataset.mode = "light"; // the guides' Dark mode switch
     const ready = GAMES.filter((g) => g.status === "ready");
     // The hero is the guide you're playing: the last one you opened, else the first ready one.
     const hero = ready.find((g) => g.id === last) || ready[0];
@@ -95,7 +96,7 @@
     };
     paint(null);
     const s = document.createElement("script");
-    s.src = `games/${hero.id}/data.js?v=17`;
+    s.src = `games/${hero.id}/data.js?v=18`;
     s.onload = () => paint(window.GAME);
     document.body.appendChild(s);
   })();

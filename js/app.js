@@ -414,9 +414,13 @@
     $("#bar").style.width = (all.length ? (d / all.length) * 100 : 0) + "%";
   }
 
+  // Dark mode: the View menu's switch, saved on this device for every guide ("pg.dark").
+  // Until it's used, each version keeps its own look (e.g. Black 2 dark, White 2 light).
+  const darkPref = () => { try { const v = localStorage.getItem("pg.dark"); return v == null ? null : v === "1"; } catch { return null; } };
   function applyTheme() {
-    const v = G.versions[verIndex()], root = document.documentElement.style;
-    document.body.dataset.mode = v.mode;
+    const v = G.versions[verIndex()], root = document.documentElement.style, dark = darkPref();
+    document.body.dataset.mode = dark == null ? v.mode : dark ? "dark" : "light";
+    $("#darkMode").checked = document.body.dataset.mode === "dark";
     document.body.dataset.skin = G.skin || "gen5";
     document.body.dataset.version = v.id; // (not data-ver: that attribute marks the version buttons)
     root.setProperty("--accent", v.accent); root.setProperty("--accent-2", v.accent2); root.setProperty("--accent-ink", v.ink);
@@ -754,6 +758,7 @@
   $("#starter").onchange = (e) => { S.starter = e.target.value; save(); renderAll(); };
   $("#extras").onchange = (e) => { S.extras = e.target.checked; save(); renderAll(); };
   $("#hideDone").onchange = (e) => { S.hideDone = e.target.checked; save(); renderAll(); };
+  $("#darkMode").onchange = (e) => { try { localStorage.setItem("pg.dark", e.target.checked ? "1" : "0"); } catch {} applyTheme(); };
   $("#regionBtn").onclick = () => openLightbox(regionSrc(true), `${G.regionName || "Region"} · ${verLabel()}`, null, regionSrc());
   // Where you left off: the first unchecked step after the last one you checked
   // (skipped steps further back don't pull you away from where you are).

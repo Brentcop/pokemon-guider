@@ -15,7 +15,7 @@
     set: (k, v) => { try { localStorage.setItem(k, v); } catch {} },
     del: (k) => { try { localStorage.removeItem(k); } catch {} },
   };
-  const isProgressKey = (k) => k.startsWith("pg.") && !k.startsWith("pg.sync.") && k !== "pg.lastGame";
+  const isProgressKey = (k) => k.startsWith("pg.") && !k.startsWith("pg.sync.") && k !== "pg.lastGame" && k !== "pg.dark";
 
   // ---------- snapshot ----------
   function snapshot() {
