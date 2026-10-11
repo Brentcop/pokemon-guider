@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Route Guide</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=13">
+<link rel="stylesheet" href="css/style.css?v=14">
 </head>
 <body data-mode="dark">
 <header class="topbar">
@@ -24,6 +24,7 @@
     <label class="tog"><input type="checkbox" id="extras"> Show extras</label>
     <label class="tog"><input type="checkbox" id="hideDone"> Hide done</label>
     <button class="btn" id="regionBtn" title="Open the full region map">🗺 Region map</button>
+    <button class="btn" id="typesBtn" title="Type chart and Pokémon matchups (T)">⚔ Types</button>
     <button class="btn dex-btn" id="dexBtn" title="Legendary Dex (D)">★ Dex <span id="dexCount"></span></button>
     <button class="btn kbd-btn" id="kbdBtn" title="Keyboard shortcuts (?)">⌨</button>
     <button class="btn sync-btn" id="syncBtn" title="Sync progress across devices" data-state="off"><span class="dot"></span>☁ Sync</button>
@@ -89,6 +90,20 @@
   </section>
 </dialog>
 
+<dialog class="sync-dlg types-dlg" id="typesDlg">
+  <div class="sd-head"><h2>⚔ Types</h2>
+    <div class="tt-tabs"><button type="button" class="btn on" data-tt-tab="lookup">Matchups</button><button type="button" class="btn" data-tt-tab="chart">Type chart</button></div>
+    <button class="btn" id="ttClose">✕</button></div>
+  <div id="ttLookup">
+    <input id="ttSearch" list="ttList" placeholder="Pokémon name, e.g. Kyurem" autocomplete="off" spellcheck="false">
+    <datalist id="ttList"></datalist>
+    <div class="tt-or">or pick up to two types</div>
+    <div class="tt-pick" id="ttPick"></div>
+    <div id="ttResult"></div>
+  </div>
+  <div id="ttChart" hidden></div>
+</dialog>
+
 <dialog class="sync-dlg kbd-dlg" id="kbdDlg">
   <div class="sd-head"><h2>⌨ Keyboard shortcuts</h2><button class="btn" id="kbdClose">✕</button></div>
   <table class="kbd-table">
@@ -101,6 +116,7 @@
     <tr><td><kbd>B</kbd></td><td>Open the selected step on Bulbapedia</td></tr>
     <tr><td><kbd>D</kbd></td><td>Legendary Dex (narrow screens)</td></tr>
     <tr><td><kbd>R</kbd></td><td>Region map</td></tr>
+    <tr><td><kbd>T</kbd></td><td>Types: matchups and type chart (or click any Pokémon in a battle)</td></tr>
     <tr><td><kbd>Esc</kbd></td><td>Close maps and panels</td></tr>
     <tr><td><kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd></td><td>Full-screen map: move (hold Shift to move faster)</td></tr>
     <tr><td><kbd>+</kbd> / <kbd>−</kbd> · <kbd>0</kbd> · <kbd>P</kbd></td><td>Full-screen map: zoom · fit · back to the pin</td></tr>
@@ -110,8 +126,10 @@
 
 <footer class="foot" id="foot"></footer>
 
-<script src="games/registry.js?v=13"></script>
-<script src="assets/dex.js?v=13"></script>
+<script src="games/registry.js?v=14"></script>
+<script src="assets/dex.js?v=14"></script>
+<script src="assets/pokedex.js?v=14"></script>
+<script src="assets/types.js?v=14"></script>
 <script>
   // Load the requested game module, then the shared renderer.
   (() => {
@@ -119,11 +137,11 @@
     const entry = GAMES.find((g) => g.id === id && g.status === "ready");
     if (!entry) { location.replace("index.html"); return; }
     // Bump BUILD on every release so browsers (and GitHub Pages' cache) fetch fresh files.
-    const BUILD = "13";
+    const BUILD = "14";
     const load = (src) => new Promise((ok, fail) => {
       const s = document.createElement("script"); s.src = `${src}?v=${BUILD}`; s.onload = ok; s.onerror = fail; document.body.appendChild(s);
     });
-    load(`games/${id}/data.js`).then(() => load("js/md5.js")).then(() => load("js/sync.js")).then(() => load("js/app.js"))
+    load(`games/${id}/data.js`).then(() => load("js/md5.js")).then(() => load("js/sync.js")).then(() => load("js/app.js")).then(() => load("js/typetool.js"))
       .catch(() => { document.getElementById("main").textContent = `Couldn't load games/${id}/data.js`; });
   })();
 </script>

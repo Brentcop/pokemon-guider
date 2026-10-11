@@ -789,6 +789,7 @@ const CHAPTERS = [
 --------------------------------------------------------------------------- */
 window.GAME = {
   id: "b2w2",
+  gen: 5,                                   // picks the type chart and Pokémon typings for the Types panel
   title: "B2W2 Legendary Route",
   tagline: "Main story from Part 1 to every catchable legendary",
   // First entry = text before "|" in {a|b} placeholders, second = after.

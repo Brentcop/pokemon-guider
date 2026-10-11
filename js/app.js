@@ -49,11 +49,7 @@
     window.Sync?.touch();
   };
 
-  const TYPE_COLORS = {
-    Normal: "#9a9a6e", Fire: "#ee7f30", Water: "#5f8ff0", Grass: "#69c045", Electric: "#f3c623", Ice: "#76cfcf",
-    Fighting: "#c0302a", Poison: "#9b409b", Ground: "#d8b45a", Flying: "#9a86ee", Psychic: "#f75587", Bug: "#a0b020",
-    Rock: "#b4a03a", Ghost: "#6c5894", Dragon: "#6a3cf5", Dark: "#6c584a", Steel: "#b4b4cc", Fairy: "#e89ae8",
-  };
+  // TYPE_COLORS comes from assets/types.js (shared with the Types panel).
   const TYPE_LABEL = { story: "Story", boss: "Battle", legend: "Legendary", key: "Key item", prep: "Prep", heal: "Heal", tip: "Extra" };
 
   const $ = (s, r = document) => r.querySelector(s);
@@ -149,7 +145,7 @@
     if (item === "-") item = "";
     name = V(name); types = V(types);
     const src = sprite(name.split(" / ")[0]);
-    return `<div class="mon">${src ? `<img src="${src}" alt="" loading="lazy">` : ""}
+    return `<div class="mon" data-mon="${esc(name.split(" / ")[0])}" title="Matchups for ${esc(name)}">${src ? `<img src="${src}" alt="" loading="lazy">` : ""}
       <span class="mn">${esc(name)}</span><span class="ml">Lv ${lvl}</span>${typePills(types)}
       ${item ? `<span class="mi">@ ${esc(item)}</span>` : ""}</div>`;
   }
@@ -170,7 +166,7 @@
     return `<div class="legend-card">
       <div class="spr"><img src="${sprite(l.name, true)}" alt="${l.name}" loading="lazy" onerror="this.onerror=null;this.src='${sprite(l.name)}'"></div>
       <div>
-        <div><span class="ln">${l.name}</span><span class="lv">Lv${l.lvl}</span></div>
+        <div><button type="button" class="ln" data-mon="${esc(l.name)}" title="Matchups for ${esc(l.name)}">${l.name}</button><span class="lv">Lv${l.lvl}</span></div>
         ${typePills(l.types.join("/"))}
         <div class="row"><b>Hit with:</b> ${l.hit}</div>
         ${l.avoid ? `<div class="row"><b>Avoid:</b> ${l.avoid}</div>` : ""}
@@ -582,8 +578,9 @@
 
   // ---------- events ----------
   document.addEventListener("click", (e) => {
-    const t = e.target.closest("[data-step],[data-catch],[data-map],[data-mini],[data-xref],[data-goto],[data-ver],[data-part],[data-collapse],[data-drawer]");
+    const t = e.target.closest("[data-step],[data-catch],[data-map],[data-mini],[data-xref],[data-goto],[data-ver],[data-part],[data-collapse],[data-drawer],[data-mon]");
     if (!t) return;
+    if (t.dataset.mon) { window.TypeTool?.open(t.dataset.mon); return; }
     if (t.dataset.collapse) { toggleCollapse(t.dataset.collapse); return; }
     if (t.dataset.drawer) { setDrawer(false); return; }
     if (t.dataset.ver) { S.ver = t.dataset.ver; save(); renderAll(); return; }
@@ -702,6 +699,7 @@
       }
       case "d": setDrawer(!$("#tracker").classList.contains("open")); break;
       case "r": $("#regionBtn").click(); break;
+      case "t": window.TypeTool?.open(); break;
       default: return;
     }
     e.preventDefault();
@@ -767,8 +765,10 @@
     scrollTo({ top: el.getBoundingClientRect().top + scrollY - head - 12, behavior: "instant" });
   }
   function resume() {
-    if (!S.done.size || (location.hash && document.getElementById(location.hash.slice(1)))) return;
-    const st = resumeStep();
+    // A link to a step (#p10-tower) wins; the browser can't jump there itself because the
+    // steps are drawn after the page loads.
+    const linked = location.hash.length > 1 && document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    const st = linked ? { id: linked.id } : S.done.size && resumeStep();
     if (!st) return;
     flashTo(st.id, true); // opens its part if collapsed, turns off "Hide done" if needed
     const el = document.getElementById(st.id);

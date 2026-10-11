@@ -471,3 +471,56 @@ a.hub-card:hover { transform: translateY(-3px); border-color: var(--accent); }
   .brand .sub { display: none; }
   html { scroll-padding-top: 130px; }
 }
+
+/* ---------- Types panel (matchups + type chart) ---------- */
+.mon[data-mon] { cursor: pointer; }
+.mon[data-mon]:hover { border-color: var(--accent); }
+.legend-card button.ln { font: inherit; font-weight: 800; font-size: 17px; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+.legend-card button.ln:hover { color: var(--accent); }
+.types-dlg { width: min(720px, calc(100vw - 24px)); }
+.types-dlg .sd-head { gap: 10px; }
+.tt-tabs { display: flex; gap: 4px; margin-right: auto; margin-left: 12px; }
+.tt-tabs .btn.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+#ttSearch {
+  width: 100%; margin-top: 14px; padding: 10px 12px; font: inherit; font-size: 15px; border-radius: 9px;
+  border: 1px solid var(--line); background: var(--card-2); color: var(--text);
+}
+.tt-or { margin: 10px 0 6px; font-size: 12px; color: var(--muted); }
+.tt-pick { display: flex; flex-wrap: wrap; gap: 5px; }
+.tt-pick .ty { border: 2px solid transparent; cursor: pointer; font-size: 11px; padding: 3px 8px; opacity: .55; }
+.tt-pick .ty.on { opacity: 1; border-color: var(--text); }
+.tt-pick .ty:hover { opacity: 1; }
+#ttResult { margin-top: 14px; }
+.tt-empty, .tt-note { color: var(--muted); font-size: 12.5px; }
+.tt-head { display: flex; align-items: center; gap: 12px; }
+.tt-head img { width: 72px; height: 72px; image-rendering: pixelated; }
+.tt-head .types { justify-content: flex-start; }
+.tt-head .ty { font-size: 11px; padding: 2px 8px; }
+.tt-name { font-weight: 800; font-size: 18px; }
+.tt-name small { color: var(--muted); font-weight: 600; font-size: 12px; }
+#ttResult h4 { margin: 14px 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); }
+.tt-row { display: grid; grid-template-columns: 38px 92px 1fr; align-items: center; gap: 8px; padding: 4px 0; border-top: 1px solid var(--line); }
+.tt-pills { display: flex; flex-wrap: wrap; gap: 4px; }
+.tt-pills .ty { font-size: 10.5px; padding: 2px 7px; }
+.tt-lbl { font-size: 12.5px; color: var(--muted); }
+.tt-mult { font-weight: 800; text-align: center; border-radius: 6px; padding: 2px 0; font-size: 13px; }
+/* Matchup rows: red = bad for this Pokémon, green = good for it */
+.tt-mult { color: #fff; }
+.tt-mult.worse { background: #9f1d16; }
+.tt-mult.bad { background: #d0453e; }
+.tt-mult.good { background: #2e7d32; }
+.tt-mult.best { background: #1b5e20; }
+/* Chart cells, from the attacker's side: green = super effective, red = not very, black = no effect */
+.tt-table td.m2 { background: #2e7d32; color: #fff; }
+.tt-table td.m05 { background: #8a3a3a; color: #fff; }
+.tt-table td.m0 { background: #111; color: #fff; }
+#ttChart { margin-top: 14px; overflow: auto; max-height: 70vh; }
+.tt-table { border-collapse: collapse; font-size: 11px; margin: 0 auto; }
+.tt-table th, .tt-table td { border: 1px solid var(--line); width: 30px; height: 26px; text-align: center; padding: 0; }
+.tt-table td { font-weight: 800; }
+.tt-table tr:hover td, .tt-table td:hover { outline: 1px solid var(--accent); }
+.tt-col { background: var(--c); color: #fff; position: sticky; top: 0; z-index: 1; }
+.tt-col span { display: inline-block; font-size: 9.5px; font-weight: 800; text-transform: uppercase; }
+.tt-rowh { background: var(--c); color: #fff; text-align: left !important; padding: 0 6px !important; width: auto !important;
+  font-size: 10.5px; text-transform: uppercase; position: sticky; left: 0; z-index: 1; }
+.tt-corner { background: var(--card); font-size: 9px; color: var(--muted); position: sticky; left: 0; top: 0; z-index: 2; width: auto !important; padding: 0 4px !important; }

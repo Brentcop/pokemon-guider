@@ -81,6 +81,7 @@ const CHAPTERS = [
 
 window.GAME = {
   id: "template",
+  gen: 6,                 // game generation: picks the Types panel's chart (Fairy from 6) and typings
   title: "Game Route",
   tagline: "",
   versions: [
