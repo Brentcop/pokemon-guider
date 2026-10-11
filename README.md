@@ -10,37 +10,41 @@ Personal guides that keep only the main story and the legendaries, without optio
 | Sun & Moon | planned |
 | Ultra Sun & Ultra Moon | planned |
 
-**Open:** `index.html` (game picker) → `guide.html?game=<id>`. It runs from disk or from any static host such as GitHub Pages. Locally you can also run `python -m http.server` in this folder.
+**Open:** `index.html` (home page: the guide you're playing, with your progress, and the planned ones) → `guide.html?game=<id>`. It runs from disk or from any static host such as GitHub Pages. Locally you can also run `python -m http.server` in this folder.
 
 ## Using a guide
 - The **version toggle** swaps version-exclusive legendaries, puzzles, and the theme.
 - The **starter picker** sets the rival's team.
-- Check off steps as you go. Opening the guide takes you straight to where you left off: the first unchecked step after the last one you checked. **▶ Next step** does the same. Progress is saved per game in your browser.
+- Check off steps as you go. Finished steps fold into one **"N steps done"** row; click it to see them again. Opening the guide takes you straight to where you left off: the first unchecked step after the last one you checked. **Next step** does the same. Progress is saved per game in your browser.
+- Steps are grouped by **location**: each group's header has the place's map thumbnail and its **Map**, **Where is this?** and **Bulbapedia** buttons. A step only gets its own buttons when they're different (a step-specific map, or a different Bulbapedia section, shown as a small book icon by its title).
+- **Battles** show the trainer's team in a "VS" panel; **legendaries** get a big card with a **Caught** stamp once you've caught them.
 - **Legendary Dex** (right panel): mark catches, and click a row to jump to its step.
-- **📍 Where is this?** shows a pin on the region map. **Map buttons** open the inside maps (caves, towers, buildings). The location chip on a step opens its inside map when there is one. Place names in step text are links: 🗺 opens that place's inside map, 📍 shows it on the region map.
+- **Where is this?** shows a pin on the region map. **Map** buttons (and the thumbnail) open the inside maps (caves, towers, buildings). Place names in step text are links: the map icon opens that place's inside map, the pin icon shows it on the region map.
 - **Moving maps:** drag with the left, right or middle mouse button. Double-click zooms in (Shift+double-click zooms out). The mouse wheel zooms (it won't grab the wheel while you're scrolling the page past a map). The + / − / ⌖ (back to the pin) / ⤢ (full screen) buttons are in the corner. Full screen: wheel or pinch to zoom, arrow keys to move, + / − to zoom, 0 to fit, P to go back to the pin.
-- **⚔ Types** (or press T): type any Pokémon's name, or pick one or two types, to see what it's weak to, what it resists, and what its own-type moves hit. The **Type chart** tab has the full chart. Both use the game's generation, so B2W2 has no Fairy type and uses Gen 5 typings. Clicking a Pokémon in a battle or a legendary's name opens its matchups.
-- **Offline:** after you open the guide once with internet, it works without a connection. Maps are saved as you view them; **☁ Sync → Save all maps for offline** saves every map now (about 25 MB, or about 80 MB more with full-size maps). The Sync button shows **Offline** while you're disconnected; progress is still saved on the device and syncs when you're back. A ⬇ on the button means every map is saved.
-- **Show extras** reveals optional tips.
-- **📖 Bulbapedia** on each step opens that exact section. Each part's header has a **More on Bulbapedia** list covering all the side content, items and full text.
-- **Parts collapse:** tap ▾ on a part header. Checking off a whole part folds it up automatically.
+- **Types** (or press T): type any Pokémon's name, or pick one or two types, to see what it's weak to, what it resists, and what its own-type moves hit. The **Type chart** tab has the full chart. Both use the game's generation, so B2W2 has no Fairy type and uses Gen 5 typings. Clicking a Pokémon in a battle or a legendary's name opens its matchups.
+- **Offline:** after you open the guide once with internet, it works without a connection. Maps are saved as you view them; **View → Sync → Save all maps for offline** saves every map now (about 25 MB, or about 80 MB more with full-size maps). The Sync item shows **Offline** while you're disconnected (and the View button gets a dot); progress is still saved on the device and syncs when you're back. A download mark next to Sync means every map is saved.
+- **View menu** (top right): **Show extras** reveals optional tips, **Hide done** hides finished steps completely, plus **Sync** and **Keyboard shortcuts**.
+- **Bulbapedia** buttons open that exact section. Each part's header has a **More on Bulbapedia** list covering all the side content, items and full text.
+- **Parts collapse:** tap the arrow on a part header. Checking off a whole part folds it up automatically.
 - **Keyboard (desktop):** J/K move between steps, X checks one off, N jumps to the next unchecked step, [ / ] change parts, C collapses, M opens the map, B opens Bulbapedia. Press ? for the full list.
-- **Narrow screens:** the Legendary Dex opens from the **★ Dex** button.
+- **Narrow screens:** the Legendary Dex opens from the **Dex** button.
 
 ## Layout
 ```
 index.html              game picker (reads games/registry.js)
 guide.html              shared guide page, loads games/<id>/data.js + js/app.js
 js/app.js               shared renderer (no game-specific code)
+js/icons.js             the SVG icon set (one <symbol> per icon; icon("map") returns the markup)
 js/md5.js               builds Bulbapedia image-archive links from file names
 tools/audit-maps.js     checks a game's maps: steps without one, broken images
-css/style.css           shared styles; light/dark base + per-version accent colors
+css/style.css           shared layout + theme tokens; per-game skins (gen5 = B2W2 DS menus, kalos = X & Y), light/dark, per-version accents
 assets/dex.js           Pokémon name → National Dex number (shared by all games)
 assets/pokedex.js       every Pokémon's types, incl. older-generation typings (generated by tools/build-pokedex.py)
 assets/types.js         type colors + type chart per generation
 js/typetool.js          the ⚔ Types panel
 sw.js                   offline support (service worker): saves the site, maps and sprites on the device
-assets/sprites/gen5/    sprites by dex number (<dex>.png, <dex>.gif)
+assets/sprites/gen5/    sprites by dex number (<dex>.gif animated, <dex>.png still fallback)
+assets/sprites/cover/   cover legendaries for the home page's planned games
 games/registry.js       list of games + status (ready / planned)
 games/<id>/data.js      everything about one game: versions, chapters, legendaries, pins, maps
 games/<id>/maps/        only for maps you store yourself (B2W2 links to MewMaps and Bulbapedia instead)
@@ -49,7 +53,7 @@ games/_template/        starting point for a new game, with every field document
 
 ## Adding a game
 1. Copy `games/_template/` to `games/<id>/`, using the id already in `games/registry.js` (`xy`, `oras`, `sm`, `usum`).
-2. Fill in `data.js`: `gen` (the game's generation, for the Types panel), versions (with theme colors), chapters and steps, legendaries, region-map pins, maps.
+2. Fill in `data.js`: `gen` (the game's generation, for the Types panel), `skin` (its look; add a `body[data-skin="…"]` token block in `css/style.css` for a new one), versions (with accent colors and light/dark mode), chapters and steps, legendaries, region-map pins, maps. Steps in a row with the same `loc` are grouped under one location header automatically. Add `art` (cover legendary sprites) to its `games/registry.js` entry for the home page.
 3. Maps: aim for **every step's location to have a close-up map**. Each map has a `name` that matches step `loc`s (add other names it covers in `locs`), and one source:
    - `{ drive: "…" }`: a Google Drive file id. MewMaps hosts its maps this way; use it for caves, towers and other dungeons.
    - `{ bulba: "File name.png" }`: a Bulbapedia image file. Town and route maps are the `image=` in each location article's infobox (fetch `?action=raw`). Gym infoboxes show anime art instead, so try `<Name> Gym <GAME>.png` (B2W2 used `Virbank Gym B2W2.png`). Skip screenshots and tiny locator maps. Write `{X|Y}` to use a different file per version.
@@ -57,7 +61,7 @@ games/_template/        starting point for a new game, with every field document
 
    A step gets a button for its own `map` (a key or a list of keys), its location's map, and any map named in its title. Place names in step text link to their maps automatically.
    Then run `node tools/audit-maps.js <id>` to list steps with no map and confirm every image loads.
-4. Add any new Pokémon names to `assets/dex.js`. Add a sprite folder (for example `assets/sprites/gen6/`) and point `sprites` at it.
+4. Add any new Pokémon names to `assets/dex.js`. Add a sprite folder (for example `assets/sprites/gen6/`) and point `sprites` at it. Battle panels and legendary cards use `<dex>.gif` when it exists and fall back to `<dex>.png`.
 5. Set the game's `status` to `"ready"` in `games/registry.js`.
 6. After any change, bump `BUILD` in `guide.html` (and the `?v=` numbers) so browsers load the new files. Offline support picks up new games from `games/registry.js` automatically; add a new shared file to `CORE` in `sw.js`.
 

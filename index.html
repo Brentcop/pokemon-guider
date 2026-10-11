@@ -5,38 +5,98 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pokémon Route Guides</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=7">
+<link rel="stylesheet" href="css/style.css?v=16">
 </head>
-<body class="hub" data-mode="dark">
+<body class="hub" data-mode="dark" data-skin="gen5">
 <header class="hub-head">
   <span class="ball" aria-hidden="true"></span>
-  <h1>Pokémon Route Guides</h1>
-  <p class="sub">Main story and legendaries only, without the clutter.</p>
+  <div>
+    <h1>Pokémon Route Guides</h1>
+    <p class="sub">Main story and legendaries only, without the clutter.</p>
+  </div>
 </header>
-<main class="hub-grid" id="grid"></main>
-<script src="games/registry.js?v=7"></script>
+<main class="hub-main">
+  <div class="trim hub-trim"></div>
+  <div id="hero"></div>
+  <div id="others"></div>
+</main>
+<script src="js/icons.js?v=16"></script>
+<script src="games/registry.js?v=16"></script>
 <script>
   if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(() => {});
-  // Remember the last guide opened so the home page can highlight it.
-  let last = null;
-  try { last = localStorage.getItem("pg.lastGame"); } catch {}
-  document.getElementById("grid").innerHTML = GAMES.map((g) => {
-    const ready = g.status === "ready";
-    const tag = ready ? (g.id === last ? "Continue" : "Open") : "Coming soon";
-    const inner = `
-      <div class="hub-art" style="background:linear-gradient(135deg, ${g.colors[1]}, ${g.colors[2]})">
-        <span>Gen ${g.gen} · ${g.region}</span>
-      </div>
-      <div class="hub-body">
-        <h2>${g.title}</h2>
-        ${g.playing ? `<p class="hub-play">Playing: ${g.playing}</p>` : ""}
-        <p>${g.blurb}</p>
-        <span class="hub-tag ${ready ? "on" : ""}">${tag}</span>
-      </div>`;
-    return ready
-      ? `<a class="hub-card" href="guide.html?game=${g.id}">${inner}</a>`
-      : `<div class="hub-card soon">${inner}</div>`;
-  }).join("");
+  (() => {
+    const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    let last = null;
+    try { last = localStorage.getItem("pg.lastGame"); } catch {}
+    const ready = GAMES.filter((g) => g.status === "ready");
+    // The hero is the guide you're playing: the last one you opened, else the first ready one.
+    const hero = ready.find((g) => g.id === last) || ready[0];
+    const colors = (g) => `--c0:${g.colors[0]};--c1:${g.colors[1]};--c2:${g.colors[2]}`;
+    const art = (g) => (g.art || []).map((src) => `<img src="${src}" alt="" loading="lazy">`).join("");
+
+    const card = (g) => {
+      const on = g.status === "ready";
+      const inner = `
+        <div class="hub-art" style="${colors(g)}">${art(g)}<span>Gen ${g.gen} · ${g.region}</span></div>
+        <div class="hub-body">
+          <h2>${esc(g.title)}</h2>
+          ${g.playing ? `<p class="hub-play">Playing: ${esc(g.playing)}</p>` : ""}
+          <p>${esc(g.blurb)}</p>
+          <span class="hub-tag ${on ? "on" : ""}">${on ? "Open" : "Coming soon"}</span>
+        </div>`;
+      return on ? `<a class="hub-card" href="guide.html?game=${g.id}">${inner}</a>` : `<div class="hub-card soon">${inner}</div>`;
+    };
+    const rest = GAMES.filter((g) => g !== hero);
+    const restReady = rest.filter((g) => g.status === "ready"), planned = rest.filter((g) => g.status !== "ready");
+    document.getElementById("others").innerHTML =
+      (restReady.length ? `<h2 class="hub-sec">More guides</h2><div class="hub-row">${restReady.map(card).join("")}</div>` : "")
+      + (planned.length ? `<h2 class="hub-sec">Coming soon</h2><div class="hub-row">${planned.map(card).join("")}</div>` : "");
+    if (!hero) return;
+
+    // Hero: the guide's own data gives the parts and legendaries; progress comes from the same
+    // localStorage keys the guide uses (pg.<id>.done / caught / ver / extras).
+    const get = (k, d) => { try { const v = localStorage.getItem(`pg.${hero.id}.${k}`); return v == null ? d : JSON.parse(v); } catch { return d; } };
+    const paint = (G) => {
+      const ver = G && (G.versions.find((v) => v.id === get("ver")) || G.versions[0]);
+      if (G) {
+        document.body.dataset.skin = G.skin || "gen5";
+        const r = document.documentElement.style;
+        r.setProperty("--accent", ver.accent); r.setProperty("--accent-2", ver.accent2); r.setProperty("--accent-ink", ver.ink);
+      }
+      let stats = "", where = "";
+      if (G) {
+        const done = new Set(get("done", [])), caught = new Set(get("caught", [])), extras = get("extras", false);
+        const pick = (s) => String(s).replace(/\{([^{}|]*)\|([^{}]*)\}/g, (_, a, b) => (ver === G.versions[0] ? a : b));
+        const all = G.chapters.flatMap((c) => c.steps.map((s) => ({ s, c }))).filter(({ s }) => extras || s.type !== "tip");
+        const req = all.filter(({ s }) => s.type !== "tip"), nDone = req.filter(({ s }) => done.has(s.id)).length;
+        let lastI = -1; all.forEach(({ s }, i) => { if (done.has(s.id)) lastI = i; });
+        const next = all[lastI + 1] || all.find(({ s }) => !done.has(s.id));
+        const legs = G.legends.filter((l) => l.ver === "both" || l.ver === ver.id), nC = legs.filter((l) => caught.has(l.id)).length;
+        const main = G.chapters.filter((c) => !c.postgame);
+        const partTxt = !next ? "All done" : next.c.postgame ? esc(next.c.part) : `${esc(next.c.part)} <small>of ${main.length}</small>`;
+        stats = `<div class="hh-stats">
+          <div class="hh-stat"><div class="k">Progress</div><div class="v">${partTxt}</div><div class="bar"><div style="width:${req.length ? (nDone / req.length) * 100 : 0}%"></div></div></div>
+          <div class="hh-stat leg"><div class="k">Legendaries</div><div class="v">${nC}<small> / ${legs.length} in ${esc(ver.label)}</small></div><div class="bar"><div style="width:${legs.length ? (nC / legs.length) * 100 : 0}%"></div></div></div>
+        </div>`;
+        where = next ? `<p class="hh-where">${done.size ? "Up next" : "Start with"}: <b>${pick(next.s.title).replace(/<[^>]*>/g, "")}</b></p>` : "";
+      }
+      document.getElementById("hero").innerHTML = `
+        <a class="hub-hero" href="guide.html?game=${hero.id}">
+          <div class="hh-art" style="${colors(hero)}"><span class="hh-tag">Gen ${hero.gen} · ${hero.region}</span>${art(hero)}</div>
+          <div class="hh-body">
+            <h2>${esc(hero.title)}</h2>
+            <p class="hh-play">${esc(hero.blurb)}</p>
+            ${stats}${where}
+            <span class="btn primary hh-go">${icon("play")}${get("done", []).length ? "Continue" : "Start"}</span>
+          </div>
+        </a>`;
+    };
+    paint(null);
+    const s = document.createElement("script");
+    s.src = `games/${hero.id}/data.js?v=16`;
+    s.onload = () => paint(window.GAME);
+    document.body.appendChild(s);
+  })();
 </script>
 </body>
 </html>

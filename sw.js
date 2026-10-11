@@ -3,7 +3,7 @@
    sprites, Google Fonts) are saved the first time they load and served from the device after.
    GitHub (progress sync) is never cached. */
 "use strict";
-const SHELL = "pg-shell-v1", MEDIA = "pg-media-v1";
+const SHELL = "pg-shell-v2", MEDIA = "pg-media-v1"; // bump SHELL when CORE changes; MEDIA holds saved maps, keep it
 const MEDIA_HOSTS = ["lh3.googleusercontent.com", "archives.bulbagarden.net", "raw.githubusercontent.com", "fonts.googleapis.com", "fonts.gstatic.com"];
 
 // Everything a guide needs to open, saved on install so the very first visit already works offline.
@@ -11,7 +11,7 @@ self.window = self; // registry.js sets window.GAMES
 importScripts("games/registry.js");
 const CORE = ["./", "index.html", "guide.html", "css/style.css", "games/registry.js",
   "assets/dex.js", "assets/pokedex.js", "assets/types.js",
-  "js/md5.js", "js/sync.js", "js/app.js", "js/typetool.js",
+  "js/icons.js", "js/md5.js", "js/sync.js", "js/app.js", "js/typetool.js",
   ...self.GAMES.filter((g) => g.status === "ready").map((g) => `games/${g.id}/data.js`)];
 
 self.addEventListener("install", (e) => {
