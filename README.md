@@ -30,19 +30,27 @@ Personal guides that keep only the main story and the legendaries, without optio
 index.html              game picker (reads games/registry.js)
 guide.html              shared guide page, loads games/<id>/data.js + js/app.js
 js/app.js               shared renderer (no game-specific code)
+js/md5.js               builds Bulbapedia image-archive links from file names
+tools/audit-maps.js     checks a game's maps: steps without one, broken images
 css/style.css           shared styles; light/dark base + per-version accent colors
 assets/dex.js           Pokémon name → National Dex number (shared by all games)
 assets/sprites/gen5/    sprites by dex number (<dex>.png, <dex>.gif)
 games/registry.js       list of games + status (ready / planned)
 games/<id>/data.js      everything about one game: versions, chapters, legendaries, pins, maps
-games/<id>/maps/        only for maps you store yourself (B2W2 links to MewMaps instead)
+games/<id>/maps/        only for maps you store yourself (B2W2 links to MewMaps and Bulbapedia instead)
 games/_template/        starting point for a new game, with every field documented
 ```
 
 ## Adding a game
 1. Copy `games/_template/` to `games/<id>/`, using the id already in `games/registry.js` (`xy`, `oras`, `sm`, `usum`).
 2. Fill in `data.js`: versions (with theme colors), chapters and steps, legendaries, region-map pins, maps.
-3. Maps: link them by Google Drive id (`{ drive: "…" }`) the way B2W2 does, or store them in `games/<id>/maps/` with ~1600px previews in `maps/sm/`.
+3. Maps: aim for **every step's location to have a close-up map**. Each map has a `name` that matches step `loc`s (add other names it covers in `locs`), and one source:
+   - `{ drive: "…" }`: a Google Drive file id. MewMaps hosts its maps this way; use it for caves, towers and other dungeons.
+   - `{ bulba: "File name.png" }`: a Bulbapedia image file. Town and route maps are the `image=` in each location article's infobox (fetch `?action=raw`). Gym infoboxes show anime art instead, so try `<Name> Gym <GAME>.png` (B2W2 used `Virbank Gym B2W2.png`). Skip screenshots and tiny locator maps. Write `{X|Y}` to use a different file per version.
+   - `{ url: "https://…" }` for any other image, or `{ file: "x.jpg" }` to store it in `games/<id>/maps/` (with a ~1600px preview in `maps/sm/`).
+
+   A step gets a button for its own `map` (a key or a list of keys), its location's map, and any map named in its title. Place names in step text link to their maps automatically.
+   Then run `node tools/audit-maps.js <id>` to list steps with no map and confirm every image loads.
 4. Add any new Pokémon names to `assets/dex.js`. Add a sprite folder (for example `assets/sprites/gen6/`) and point `sprites` at it.
 5. Set the game's `status` to `"ready"` in `games/registry.js`.
 6. After any change, bump `BUILD` in `guide.html` (and the `?v=` numbers) so browsers load the new files.

@@ -73,21 +73,30 @@
 
   const legendsForVersion = () => G.legends.filter((l) => l.ver === "both" || l.ver === S.ver);
   const legendById = (id) => G.legends.find((l) => l.id === id);
-  // A map is { drive: "<Google Drive file id>" } (linked from the source site), { url: "https://…" }
-  // or { file: "name.jpg" } (stored in games/<id>/maps/, preview in maps/sm/).
-  const mapSrc = (m, full) => m.url || (m.drive
+  // A map is one of:
+  //   { drive: "<Google Drive file id>" }   linked from the source site (e.g. MewMaps)
+  //   { bulba: "File name.png" }            Bulbapedia image archive; {v1|v2} picks a version's file
+  //   { url: "https://…" }                  any other image
+  //   { file: "name.jpg" }                  stored in games/<id>/maps/, preview in maps/sm/
+  function bulbaUrl(name) {
+    const f = V(name).trim().replace(/ /g, "_"), h = window.md5(f);
+    return `https://archives.bulbagarden.net/media/upload/${h[0]}/${h.slice(0, 2)}/${encodeURIComponent(f)}`;
+  }
+  const mapSrc = (m, full) => m.bulba ? bulbaUrl(m.bulba) : m.url ? V(m.url) : m.drive
     ? `https://lh3.googleusercontent.com/d/${m.drive}=${full ? "s0" : "w1600"}`
-    : `${BASE}maps/${full ? "" : "sm/"}${m.file}`);
+    : `${BASE}maps/${full ? "" : "sm/"}${m.file}`;
 
   // Place name → location-map key, from each map's name plus its `locs` aliases.
   const MAP_BY_NAME = new Map();
   for (const [k, m] of Object.entries(G.maps || {}))
     for (const n of [m.name, ...(m.locs || [])]) if (!MAP_BY_NAME.has(n)) MAP_BY_NAME.set(n, k);
   const asList = (x) => (x == null || x === "" ? [] : Array.isArray(x) ? x : [x]);
-  // Maps for a step: its own `map` (one key or a list) first, then the map for its location.
+  // Maps for a step: its own `map` (one key or a list), then the map for its location, then
+  // maps for places named in its title (e.g. "Virbank Gym: Roxie" → the Gym's map).
   function stepMaps(st) {
     const keys = asList(st.map).map(V);
     if (MAP_BY_NAME.has(st.loc)) keys.push(MAP_BY_NAME.get(st.loc));
+    for (const n of (PLACE_RE && V(st.title).match(PLACE_RE)) || []) if (MAP_BY_NAME.has(n)) keys.push(MAP_BY_NAME.get(n));
     return [...new Set(keys)].filter((k) => G.maps[k]);
   }
 

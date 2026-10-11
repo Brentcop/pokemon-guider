@@ -26,12 +26,16 @@ const PINS = {
   // "Lumiose City": [50.0, 50.0],
 };
 
-// Location maps: key → { name, drive: "<Google Drive id>" } to link a map hosted elsewhere,
-// { name, url: "https://…" } for a plain image link, or { name, file: "x.jpg" } for a map stored in maps/ (+ maps/sm/ preview).
+// Location maps: key → { name, <source> }. Give every step location a close-up map if you can.
+//   drive: "<Google Drive id>"   e.g. MewMaps dungeon maps
+//   bulba: "File name.png"       Bulbapedia image archive (the location infobox's image=); "{X|Y}" per version
+//   url: "https://…"             any other image
+//   file: "x.jpg"                stored in maps/ (+ maps/sm/ ~1600px preview)
 // Optional locs: ["Other place", …] — extra place names this map covers. Any step whose `loc` is the
 // map's name (or one of its locs) gets a button for it, and those names in step text become links to it.
 const MAPS = {
   // "terminus-cave": { name: "Terminus Cave", drive: "1AbC…", locs: ["Route 18 cave"] },
+  // "lumiose-city": { name: "Lumiose City", bulba: "Lumiose City XY.png" },
 };
 
 const LEGENDS = [
