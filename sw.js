@@ -3,7 +3,7 @@
    sprites, Google Fonts) are saved the first time they load and served from the device after.
    GitHub (progress sync) is never cached. */
 "use strict";
-const SHELL = "pg-shell-v2", MEDIA = "pg-media-v1"; // bump SHELL when CORE changes; MEDIA holds saved maps, keep it
+const SHELL = "pg-shell-v3", MEDIA = "pg-media-v1"; // bump SHELL when CORE changes; MEDIA holds saved maps, keep it
 const MEDIA_HOSTS = ["lh3.googleusercontent.com", "archives.bulbagarden.net", "raw.githubusercontent.com", "fonts.googleapis.com", "fonts.gstatic.com"];
 
 // Everything a guide needs to open, saved on install so the very first visit already works offline.

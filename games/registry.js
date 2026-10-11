@@ -19,11 +19,11 @@ window.GAMES = [
     art: ["assets/sprites/gen5/644.gif", "assets/sprites/gen5/646.gif", "assets/sprites/gen5/643.gif"],
   },
   {
-    id: "xy", status: "planned", gen: 6, region: "Kalos",
+    id: "xy", status: "ready", gen: 6, region: "Kalos",
     title: "X & Y", playing: "Y",
-    blurb: "Story route + legendary hunt.",
+    blurb: "Full story (Parts 1–15), then every catchable legendary.",
     colors: ["#1c3a6e", "#2f6fd6", "#d6334a"],
-    art: ["assets/sprites/cover/716.png", "assets/sprites/cover/717.png"],
+    art: ["assets/sprites/gen6/716.gif", "assets/sprites/gen6/717.gif"],
   },
   {
     id: "oras", status: "planned", gen: 6, region: "Hoenn",

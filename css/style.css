@@ -523,6 +523,13 @@ body[data-skin="kalos"] .vs { clip-path: none; border-radius: 0 999px 999px 0; p
 .use { font-size: 13.5px; padding: 0 12px; }
 .use b.lbl { color: var(--t-boss); text-transform: uppercase; font-size: 11px; letter-spacing: .5px; margin-right: 4px; }
 
+/* Kalos (Gen 6) sprites are 3D renders of very different sizes, not pixel art: scale them smoothly
+   to fit the frame (never up) instead of pixel-doubling. */
+body[data-skin="kalos"] .sp { image-rendering: auto; }
+body[data-skin="kalos"] .mon-spr .sp, body[data-skin="kalos"] .mon-spr .sp.png { width: auto; height: auto; max-width: 100px; max-height: 84px; margin: 0; object-fit: contain; }
+body[data-skin="kalos"] .t-spr .sp.png { width: auto; height: auto; max-width: 44px; max-height: 44px; }
+body[data-skin="kalos"] .tt-head img { width: auto; height: auto; max-width: 96px; max-height: 96px; margin: 0; image-rendering: auto; }
+
 /* ---------- Legendary encounter: the showpiece ---------- */
 .step[data-type="legend"] { padding-top: 14px; padding-bottom: 14px; }
 .step[data-type="legend"] .s-title { font-size: 17px; }
@@ -545,6 +552,7 @@ body[data-skin="kalos"] .vs { clip-path: none; border-radius: 0 999px 999px 0; p
 }
 .lc-stage .sp { zoom: 2; position: relative; z-index: 1; }
 .lc-stage .sp.png { width: 96px; height: 96px; margin: -14px; }
+body[data-skin="kalos"] .lc-stage .sp, body[data-skin="kalos"] .lc-stage .sp.png { zoom: 1; width: auto; height: auto; max-width: 220px; max-height: 190px; margin: 0; }
 .stamp {
   position: absolute; right: 8px; top: 10px; z-index: 2; transform: rotate(-12deg);
   display: inline-flex; align-items: center; gap: 5px;
@@ -807,6 +815,8 @@ a.hub-hero:hover { border-color: var(--accent); transform: translateY(-2px); }
   linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px) 0 0 / 20px 20px; }
 .hh-art img { image-rendering: pixelated; position: relative; zoom: 2; margin: 0 -14px; filter: drop-shadow(0 4px 0 rgba(0,0,0,.3)); }
 .hh-art img:nth-child(2) { zoom: 2; z-index: 1; margin-bottom: 8px; }
+/* Gen 6 art is already large and not pixel art: show it at its own size */
+body[data-skin="kalos"] .hh-art img, body[data-skin="kalos"] .hh-art img:nth-child(2) { zoom: 1; image-rendering: auto; max-height: 220px; margin: 0 -6px; }
 .hh-art .hh-tag { position: absolute; left: 0; top: 14px; font: 9px/1 var(--pixel); color: var(--accent-ink); background: var(--accent); padding: 7px 24px 6px 14px; clip-path: var(--tab-clip); }
 .hh-body { padding: 24px 24px 22px; display: flex; flex-direction: column; gap: 10px; }
 .hh-body h2 { margin: 0; font-size: 26px; letter-spacing: -.4px; }
@@ -831,7 +841,8 @@ a.hub-card:hover { transform: translateY(-2px); border-color: var(--accent); }
   height: 108px; position: relative; display: flex; align-items: flex-end; justify-content: center; overflow: hidden;
   background: radial-gradient(closest-side at 50% 80%, color-mix(in srgb, var(--c1) 60%, transparent), transparent), linear-gradient(150deg, var(--c1), var(--c0) 55%, var(--c2));
 }
-.hub-art img { image-rendering: pixelated; height: 96px; margin: 0 -14px -8px; filter: brightness(0) opacity(.55); }
+.hub-art img { image-rendering: pixelated; max-height: 96px; margin: 0 -10px -6px; }
+.hub-card.soon .hub-art img { height: 96px; max-height: none; margin: 0 -14px -8px; filter: brightness(0) opacity(.55); } /* planned: silhouettes */
 .hub-art span { position: absolute; left: 10px; top: 10px; font: 8px var(--pixel); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
 .hub-body { padding: 12px 14px 14px; }
 .hub-body h2 { margin: 0 0 2px; font-size: 16px; }

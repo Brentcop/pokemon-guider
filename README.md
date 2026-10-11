@@ -5,7 +5,7 @@ Personal guides that keep only the main story and the legendaries, without optio
 | Game | Status |
 |---|---|
 | Black 2 & White 2 | ✅ Parts 1–15 + post-game legendaries |
-| X & Y | planned |
+| X & Y | ✅ Parts 1–15 + post-game legendaries (Y by default) |
 | Omega Ruby & Alpha Sapphire | planned |
 | Sun & Moon | planned |
 | Ultra Sun & Ultra Moon | planned |
@@ -14,7 +14,7 @@ Personal guides that keep only the main story and the legendaries, without optio
 
 ## Using a guide
 - The **version toggle** swaps version-exclusive legendaries, puzzles, and the theme.
-- The **starter picker** sets the rival's team.
+- The **starter picker** sets the rivals' teams (and, in X & Y, which legendary bird you can catch).
 - Check off steps as you go. Finished steps fold into one **"N steps done"** row; click it to see them again. Opening the guide takes you straight to where you left off: the first unchecked step after the last one you checked. **Next step** does the same. Progress is saved per game in your browser.
 - Steps are grouped by **location**: each group's header has the place's map thumbnail and its **Map**, **Where is this?** and **Bulbapedia** buttons. A step only gets its own buttons when they're different (a step-specific map, or a different Bulbapedia section, shown as a small book icon by its title).
 - **Battles** show the trainer's team in a "VS" panel; **legendaries** get a big card with a **Caught** stamp once you've caught them.
@@ -44,6 +44,7 @@ assets/types.js         type colors + type chart per generation
 js/typetool.js          the ⚔ Types panel
 sw.js                   offline support (service worker): saves the site, maps and sprites on the device
 assets/sprites/gen5/    sprites by dex number (<dex>.gif animated, <dex>.png still fallback)
+assets/sprites/gen6/    X & Y sprites (<dex>.gif animated, <dex>.png still)
 assets/sprites/cover/   cover legendaries for the home page's planned games
 games/registry.js       list of games + status (ready / planned)
 games/<id>/data.js      everything about one game: versions, chapters, legendaries, pins, maps
@@ -65,4 +66,7 @@ games/_template/        starting point for a new game, with every field document
 5. Set the game's `status` to `"ready"` in `games/registry.js`.
 6. After any change, bump `BUILD` in `guide.html` (and the `?v=` numbers) so browsers load the new files. Offline support picks up new games from `games/registry.js` automatically; add a new shared file to `CORE` in `sw.js`.
 
+While a guide is still `planned`, open it with `guide.html?game=<id>&preview` to check it; it stays off the home page until it's `ready`.
+
 Sources for B2W2: [Bulbapedia walkthrough](https://bulbapedia.bulbagarden.net/wiki/Walkthrough:Pok%C3%A9mon_Black_2_and_White_2), [MewMaps](https://www.mewmaps.org/black-2-white-2), sprites from PokéAPI.
+Sources for X & Y: [Bulbapedia walkthrough](https://bulbapedia.bulbagarden.net/wiki/Walkthrough:Pok%C3%A9mon_X_and_Y), [MewMaps](https://www.mewmaps.org/x-y) (dungeons, Lumiose, region map) and Bulbapedia's archive (towns and routes), sprites from PokéAPI (`assets/sprites/gen6/`: animated Showdown .gif, X/Y .png).
