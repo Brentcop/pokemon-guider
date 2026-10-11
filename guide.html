@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Route Guide</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=9">
+<link rel="stylesheet" href="css/style.css?v=12">
 </head>
 <body data-mode="dark">
 <header class="topbar">
@@ -110,8 +110,8 @@
 
 <footer class="foot" id="foot"></footer>
 
-<script src="games/registry.js?v=9"></script>
-<script src="assets/dex.js?v=9"></script>
+<script src="games/registry.js?v=12"></script>
+<script src="assets/dex.js?v=12"></script>
 <script>
   // Load the requested game module, then the shared renderer.
   (() => {
@@ -119,7 +119,7 @@
     const entry = GAMES.find((g) => g.id === id && g.status === "ready");
     if (!entry) { location.replace("index.html"); return; }
     // Bump BUILD on every release so browsers (and GitHub Pages' cache) fetch fresh files.
-    const BUILD = "9";
+    const BUILD = "12";
     const load = (src) => new Promise((ok, fail) => {
       const s = document.createElement("script"); s.src = `${src}?v=${BUILD}`; s.onload = ok; s.onerror = fail; document.body.appendChild(s);
     });

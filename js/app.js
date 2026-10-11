@@ -73,11 +73,11 @@
 
   const legendsForVersion = () => G.legends.filter((l) => l.ver === "both" || l.ver === S.ver);
   const legendById = (id) => G.legends.find((l) => l.id === id);
-  // A map is { drive: "<Google Drive file id>" } (linked from the source site)
+  // A map is { drive: "<Google Drive file id>" } (linked from the source site), { url: "https://…" }
   // or { file: "name.jpg" } (stored in games/<id>/maps/, preview in maps/sm/).
-  const mapSrc = (m, full) => m.drive
+  const mapSrc = (m, full) => m.url || (m.drive
     ? `https://lh3.googleusercontent.com/d/${m.drive}=${full ? "s0" : "w1600"}`
-    : `${BASE}maps/${full ? "" : "sm/"}${m.file}`;
+    : `${BASE}maps/${full ? "" : "sm/"}${m.file}`);
 
   // Place name → location-map key, from each map's name plus its `locs` aliases.
   const MAP_BY_NAME = new Map();
@@ -335,6 +335,8 @@
       V2.x = clamp(V2.x, Math.min(keep - iw, b.w - iw), Math.max(b.w - keep, 0));
       V2.y = clamp(V2.y, Math.min(keep - ih, b.h - ih), Math.max(b.h - keep, 0));
       img.style.transform = `translate(${V2.x}px,${V2.y}px) scale(${V2.s})`;
+      const real = img.naturalWidth ? (V2.s * V2.w * devicePixelRatio) / img.naturalWidth : 1;
+      img.style.imageRendering = real >= 1.5 ? "pixelated" : "auto";
       if (pinEl) {
         pinEl.hidden = !V2.pin || !V2.w;
         if (V2.pin) {
@@ -361,7 +363,12 @@
       V2.y = b.h / 2 - (V2.pin[1] / 100) * V2.h * V2.s;
       apply();
     }
-    function setImage(w, h, pin) { V2.w = w; V2.h = h; V2.pin = pin || null; home(); }
+    function setImage(w, h, pin) {
+      V2.w = w; V2.h = h; V2.pin = pin || null;
+      img.style.width = w ? w + "px" : ""; img.style.height = h ? h + "px" : "";
+      last = box(); // the box may have just been resized for this image; don't shift it again
+      home();
+    }
 
     // Drag with any mouse button (left, middle or right). Touch: pinch + drag in the
     // lightbox; inline maps leave touch alone so the page still scrolls, and a tap opens full screen.
@@ -428,7 +435,7 @@
       V2.x += (b.w - last.w) / 2; V2.y += (b.h - last.h) / 2; last = b; apply();
     }).observe(stage);
 
-    return { setImage, fit, home, zoomBy, pan(dx, dy) { V2.x += dx; V2.y += dy; apply(); }, get tapIsTouch() { return lastType !== "mouse"; }, get moved() { return moved; } };
+    return { setImage, fit, home, zoomBy, refresh: apply, pan(dx, dy) { V2.x += dx; V2.y += dy; apply(); }, get tapIsTouch() { return lastType !== "mouse"; }, get moved() { return moved; } };
   }
 
   // ---------- inline maps (region pin + location maps), shown inside a step ----------
@@ -459,8 +466,16 @@
       if (!pin) mm.style.height = Math.min(520, mm.clientWidth * (img.naturalHeight / img.naturalWidth)) + "px";
       pz.setImage(img.naturalWidth, img.naturalHeight, pin);
       mm.classList.add("ready");
+      // The preview is ~1600px wide; swap in the full-size map (same file the full-screen view
+      // uses) so zoomed-in views stay sharp. The layout size is fixed, so nothing moves.
+      if (full !== src) {
+        const hi = new Image();
+        hi.referrerPolicy = "no-referrer";
+        hi.onload = () => { if (mm.isConnected) { img.src = full; pz.refresh(); } };
+        hi.src = full;
+      }
     };
-    img.complete ? ready() : img.addEventListener("load", ready);
+    img.complete && img.naturalWidth ? ready() : img.addEventListener("load", ready, { once: true });
     mm.addEventListener("click", (e) => {
       const z = e.target.closest("[data-z]")?.dataset.z;
       if (z === "in") pz.zoomBy(1.5);

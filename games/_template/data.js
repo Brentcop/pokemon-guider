@@ -27,7 +27,7 @@ const PINS = {
 };
 
 // Location maps: key → { name, drive: "<Google Drive id>" } to link a map hosted elsewhere,
-// or { name, file: "x.jpg" } for a map stored in maps/ (+ maps/sm/ preview).
+// { name, url: "https://…" } for a plain image link, or { name, file: "x.jpg" } for a map stored in maps/ (+ maps/sm/ preview).
 // Optional locs: ["Other place", …] — extra place names this map covers. Any step whose `loc` is the
 // map's name (or one of its locs) gets a button for it, and those names in step text become links to it.
 const MAPS = {

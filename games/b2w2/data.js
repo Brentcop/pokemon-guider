@@ -95,6 +95,9 @@ const MAPS = {
   "celestial-tower": { name: "Celestial Tower", drive: "1kRI8-7nPqdSD7SZS-ZnRdPWKmJ4S_hMR" },
   "reversal-mountain": { name: "Reversal Mountain", drive: "1HgamUJfjx8_QPj8z5zMnqaR0FA7GSOQJ" },
   "giant-chasm": { name: "Giant Chasm", drive: "1-c7QeRPPfoe6LsxbSicIOZFkraLgmNse", locs: ["Crater Forest"] },
+  // MewMaps has no Seaside Cave map, so these floors come from Bulbapedia's image archive.
+  "seaside-cave-1f": { name: "Seaside Cave 1F", url: "https://archives.bulbagarden.net/media/upload/3/32/Seaside_Cave_1F_B2W2.png", locs: ["Seaside Cave"] },
+  "seaside-cave-b1f": { name: "Seaside Cave B1F", url: "https://archives.bulbagarden.net/media/upload/4/49/Seaside_Cave_B1F_B2W2.png" },
   "victory-road": { name: "Victory Road", drive: "10AUvP93VpTMOO4QY1WA7L-5TcLbfnseO" },
   "cave-of-being": { name: "Cave of Being", drive: "1d0FrYfUiozUwdid_TaZSvAkBt5fQrHlG" },
   "clay-tunnel": { name: "Clay Tunnel", drive: "13usfK6nS1KNKWdTA1WQJleQ_f7iZ-9no" },
@@ -554,7 +557,7 @@ const CHAPTERS = [
     id: "p14", refs: [14], part: "Part 14", title: "The Plasma Frigate & Giant Chasm",
     areas: "Route 21 · Seaside Cave · Plasma Frigate · Giant Chasm",
     steps: [
-      { id: "p14-seaside", ref: "14#Seaside_Cave", type: "story", loc: "Seaside Cave", title: "Seaside Cave: use the Colress MCHN on the odd boulder",
+      { id: "p14-seaside", map: ["seaside-cave-1f", "seaside-cave-b1f"], ref: "14#Seaside_Cave", type: "story", loc: "Seaside Cave", title: "Seaside Cave: use the Colress MCHN on the odd boulder",
         text: "Surf south down Route 21 to the cave (you need Surf and Strength)." +
           "<ol><li>1F: go south over the ledges, jump the northern ledge, head east, go down the stairs to the water, Surf north, then go down to B1F.</li>" +
           "<li>B1F: push the boulder into the hole. On the big platform, push the boulders into place with Strength, then go northwest back to 1F.</li>" +
