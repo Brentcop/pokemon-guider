@@ -387,7 +387,7 @@
     const list = legendsForVersion();
     const n = list.filter((l) => S.caught.has(l.id)).length;
     const row = (l) => `<div class="trow ${S.caught.has(l.id) ? "caught" : ""}" data-goto="${l.step}">
-      <span class="t-spr"><img class="sp png" src="${sprite(l.name)}" alt="" loading="lazy"></span>
+      <span class="t-spr">${spriteImg(l.name)}</span>
       <div><div class="tn">${l.name} <span class="tl">Lv${l.lvl}</span></div>
       <div class="tw">${esc(l.where)}${l.requires ? ` · <i>${V(l.requires)}</i>` : ""}</div>
       ${l.other && l.native && l.native !== S.ver ? `<div class="tw tw-warn">${I("warn")}${l.other}</div>` : ""}</div>

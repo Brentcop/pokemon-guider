@@ -527,7 +527,6 @@ body[data-skin="kalos"] .vs { clip-path: none; border-radius: 0 999px 999px 0; p
    to fit the frame (never up) instead of pixel-doubling. */
 body[data-skin="kalos"] .sp { image-rendering: auto; }
 body[data-skin="kalos"] .mon-spr .sp, body[data-skin="kalos"] .mon-spr .sp.png { width: auto; height: auto; max-width: 100px; max-height: 84px; margin: 0; object-fit: contain; }
-body[data-skin="kalos"] .t-spr .sp.png { width: auto; height: auto; max-width: 44px; max-height: 44px; }
 body[data-skin="kalos"] .tt-head img { width: auto; height: auto; max-width: 96px; max-height: 96px; margin: 0; image-rendering: auto; }
 
 /* ---------- Legendary encounter: the showpiece ---------- */
@@ -582,10 +581,12 @@ body[data-skin="kalos"] .lc-stage .sp, body[data-skin="kalos"] .lc-stage .sp.png
 .dexbar { height: 8px; border-radius: 2px; background: var(--panel-3); border: 1px solid var(--line); overflow: hidden; margin: 6px 0 10px; }
 .dexbar div { height: 100%; background: linear-gradient(90deg, var(--t-legend), color-mix(in srgb, var(--t-legend) 60%, #fff)); transition: width .3s; }
 .tgroup { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 12px 0 4px; font-weight: 700; }
-.trow { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 8px; padding: 4px 6px; border-radius: var(--r-sm); cursor: pointer; }
+.trow { display: grid; grid-template-columns: 56px 1fr auto; align-items: center; gap: 8px; padding: 4px 6px; border-radius: var(--r-sm); cursor: pointer; }
 .trow:hover { background: var(--panel-2); }
-.t-spr { width: 44px; height: 44px; overflow: hidden; display: grid; place-items: center; }
-.t-spr .sp.png { width: 64px; height: 64px; image-rendering: auto; }
+/* Dex icons: the animated sprite, shrunk to fit the whole Pokémon in the frame (sprites differ a lot
+   in size, so this scales smoothly rather than cropping). */
+.t-spr { width: 56px; height: 52px; display: grid; place-items: center; }
+.t-spr .sp, .t-spr .sp.png { width: auto; height: auto; max-width: 56px; max-height: 52px; margin: 0; object-fit: contain; image-rendering: auto; }
 .trow .tn { font-weight: 700; font-size: 13.5px; line-height: 1.2; }
 .trow .tl { color: var(--muted); font-weight: 600; font-size: 11.5px; }
 .trow .tw { font-size: 11.5px; color: var(--muted); line-height: 1.25; }
