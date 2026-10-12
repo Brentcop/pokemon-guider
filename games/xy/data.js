@@ -310,7 +310,7 @@ const CHAPTERS = [
       { id: "p5-rhyhorn", ref: "5#Ride_with_Rhyhorn", type: "story", loc: "Route 9", title: "Ride Rhyhorn east across Route 9",
         text: "Press A to smash the big rocks, B to get off." },
       { id: "p5-cave", ref: "5#1F", type: "story", loc: "Glittering Cave", title: "Glittering Cave: go straight at every junction",
-        text: "The green crystals light the way down to the basement." },
+        text: "The outer tunnels are dark, and the darker shadows hide wild Pokémon. The green crystals light the way down to the basement. The side branches only lead to a dead end, a Hard Stone and TM65 Shadow Claw. B1F is a single, easier path to the end." },
       { id: "p5-flare", ref: "5#B1F", type: "story", loc: "Glittering Cave", title: "Team Flare appears: tag battle two Grunts with Serena/Calem",
         text: "Several Grunts are digging for Fossils. Near the end, Serena/Calem joins you against a pair of them." },
       { id: "p5-fossil", ref: "5#B1F", type: "story", loc: "Glittering Cave", title: "Pick a Fossil from the lab assistant",
@@ -383,7 +383,13 @@ const CHAPTERS = [
         boss: { who: RIVAL, rival: true, team: [["Meowstic", 31, "Psychic"], ["Absol", 31, "Dark"], ["$rmid", 33]],
           use: "Bug hits Meowstic and Absol; Fighting and Fairy hit Absol.", reward: "" } },
       { id: "p7-gym", ref: "7#Upper", type: "boss", loc: "Coumarine City", title: "Coumarine Gym: Ramos",
-        text: "Climb and swing across the ropes on the big tree to the top (6F).",
+        text: "Climb ropes up the tree and cross the nets that ring it." +
+          "<ol><li>Climb the first rope. Cross a net <b>counter-clockwise</b> to Ranger Chaise.</li>" +
+          "<li>Climb the rope near him, cross two nets <b>clockwise</b>, then climb the next rope.</li>" +
+          "<li>Cross a net counter-clockwise to Ranger Maurice, then go back clockwise over two nets and <b>slide down</b> to the level below.</li>" +
+          "<li>Cross a net clockwise to Ranger Brooke. Climb the rope, cross a net clockwise and climb the next rope.</li>" +
+          "<li>Cross two nets counter-clockwise to Ranger Twiggy. Climb the rope beside her and cross two more nets counter-clockwise to Ramos.</li></ol>" +
+          "The slide next to Ramos takes you back to the entrance.",
         boss: { who: "Gym Leader Ramos", team: [["Jumpluff", 30, "Grass/Flying"], ["Weepinbell", 31, "Grass/Poison"], ["Gogoat", 34, "Grass"]],
           use: "<b>Fire, Flying</b> (also Poison, Bug, Ice; Jumpluff takes 4× from Ice). Avoid Water, Ground and Rock. Gogoat's Bulldoze hurts Fire types.", reward: "Plant Badge + TM86 Grass Knot" } },
       { id: "p7-gate", ref: "7#Upper", type: "story", loc: "Coumarine City", title: "South gate: the Power Plant has closed the way to Lumiose",
@@ -428,7 +434,9 @@ const CHAPTERS = [
       { id: "p9-route14", ref: "9#Scary_House", type: "story", loc: "Route 14", title: "North through the swamp to Laverre City",
         text: "Shauna drags you into the Scary House at the north end. Then continue to Laverre City." },
       { id: "p9-gym", ref: "9#Laverre_Gym", type: "boss", loc: "Laverre City", title: "Laverre Gym: Valerie",
-        text: "A dollhouse of warp panels. Take the warp panel on the <b>right</b> side of each room.",
+        text: "A dollhouse of nine rooms (3 × 3) joined by warp panels. You start in the bottom-center room, and Valerie is in the top-center room. The way through goes:" +
+          "<ol><li>Center room (Furisode Girl Kali)</li><li>Bottom-right room (Linnea)</li><li>Left-middle room (Blossom)</li><li>Top-right room (Katherine)</li><li>Valerie</li></ol>" +
+          "Each Furisode Girl stands in a room on the right path. The yellow panels work both ways, so if you land in the wrong room, step back onto the panel you arrived on and try another.",
         boss: { who: "Gym Leader Valerie", team: [["Mawile", 38, "Steel/Fairy"], ["Mr. Mime", 39, "Psychic/Fairy"], ["Sylveon", 42, "Fairy"]],
           use: "<b>Poison, Steel</b>. Mawile resists both: use Fire or Ground on it. Avoid Dark, Dragon and Fighting. Sylveon's Cute Charm can infatuate.", reward: "Fairy Badge + TM99 Dazzling Gleam" } },
       { id: "p9-factory", ref: "9#Poké_Ball_Factory", type: "story", loc: "Poké Ball Factory", title: "Sneak into the Poké Ball Factory",
@@ -466,7 +474,11 @@ const CHAPTERS = [
         boss: { who: RIVAL, rival: true, team: [["Meowstic", 44, "Psychic"], ["Absol", 44, "Dark"], ["$reevee", 44], ["$race", 46]],
           use: "Bug hits Meowstic and Absol; Fighting and Fairy hit Absol.", reward: "" } },
       { id: "p10-gym", ref: "10#Anistar_Gym", type: "boss", loc: "Anistar City", title: "Anistar Gym: Olympia",
-        text: "Stand in the middle to reveal the maze. Follow the yellow warp panels from the blue to the green to the pink paths, down to the Leader.",
+        text: "Step onto the middle of the room and the floor vanishes, leaving a sphere of walkways. Yellow squares warp you to the level above or below." +
+          "<ol><li>Take the <b>north</b> path to Psychic Paschal. Go around to the first yellow square (down a level), east to the next (back up), then south and warp down again.</li>" +
+          "<li>Warp again and keep south past Psychic Harry. At the junction go <b>east</b> (west is a dead end). At the end, warp, go north and warp again onto the purple level.</li>" +
+          "<li>Take the <b>eastern</b> of the two north paths. Then go west and south to the next square and warp.</li>" +
+          "<li>From there go <b>west</b>, behind Hex Maniac Melanie, to the yellow square. Warp down and go north to Olympia.</li></ol>",
         boss: { who: "Gym Leader Olympia", team: [["Sigilyph", 44, "Psychic/Flying"], ["Slowking", 45, "Water/Psychic"], ["Meowstic", 48, "Psychic"]],
           use: "<b>Bug, Ghost, Dark</b>; Electric for Sigilyph and Slowking. Avoid Fighting and Poison. Sigilyph sets up Reflect and Light Screen.", reward: "Psychic Badge + TM04 Calm Mind" } },
       { id: "p10-reveal", ref: "10#Holo_Clip_2", type: "story", loc: "Anistar City", title: "Lysandre reveals he leads Team Flare",
@@ -490,9 +502,9 @@ const CHAPTERS = [
         boss: { who: "Team Flare Aliana", team: [["Mightyena", 46, "Dark"], ["Druddigon", 48, "Dragon"]],
           use: "Fairy hits both. Fighting/Bug for Mightyena, Ice/Dragon for Druddigon.", reward: "" } },
       { id: "p11-rest", ref: "11#Lysandre_Labs", type: "heal", loc: "Lysandre Labs", title: "West room: rest in a bed",
-        text: "The break room on B1F has beds that heal your team (and a Grunt who hands you TM12 Taunt)." },
+        text: "After Aliana moves aside, take the <b>green</b> warp to the southwest corner. Then go north over the spin panels into the northwest office (the Defenders of Kalos give you 3 Revives). Back in the central room, ride the spin panels <b>south</b> into the west room. Its beds heal your team, and a Grunt hands you TM12 Taunt." },
       { id: "p11-celosia", ref: "11#Lysandre_Labs", type: "boss", loc: "Lysandre Labs", title: "Scientists 2 and 3: Celosia, then Bryony (northeast room)",
-        text: "They explain the plan: the stolen power and the Geosenge stones will fuel the ultimate weapon.",
+        text: "From the west room, head northeast across the central room past three Grunts and go into the northeast room. They explain the plan: the stolen power and the Geosenge stones will fuel the ultimate weapon.",
         boss: { who: "Team Flare Celosia", team: [["Manectric", 46, "Electric"], ["Drapion", 48, "Poison/Dark"]],
           use: "<b>Ground</b> hits both (4× on Drapion).", reward: "" } },
       { id: "p11-bryony", ref: "11#Lysandre_Labs", type: "boss", loc: "Lysandre Labs", title: "Bryony",
@@ -580,12 +592,18 @@ const CHAPTERS = [
       { id: "p14-route21", ref: "14#Route_21", type: "story", loc: "Route 21", title: "Route 21 northwest to Victory Road", text: "" },
       { id: "p14-gate", ref: "14#Gate", type: "story", loc: "Victory Road", title: "Gate: show your badges and beat Ace Trainer Robbie", text: "" },
       { id: "p14-road", ref: "14#Cave_1", type: "story", loc: "Victory Road", title: "Through the caves and groves",
-        text: "Cave 1 → Grove 2 (cross the bridge) → Cave 2 (stepping stones and a Strength boulder) → Grove 3. A Pokémon Ranger in Grove 3 heals you." },
+        text: "<ol><li><b>Grove 1:</b> follow the uphill path into the cave.</li>" +
+          "<li><b>Cave 1:</b> Surf northwest past the Ace Trainers. Go south from Black Belt Markus, then west back outside.</li>" +
+          "<li><b>Grove 2:</b> north across the bridge into the next cave.</li>" +
+          "<li><b>Cave 2:</b> past Battle Girl Sigrid, hop the stepping stones northwest and walk around east. Rock Smash the rock and go down the slope. Work northwest across the field of stones, then east up the stairway to Psychic William. Push the Strength boulder west into place and climb the stairway past Brains &amp; Brawn. Cross the bridge and exit northeast. (The southeast exit only leads to TM03 Psyshock.)</li>" +
+          "<li><b>Grove 3:</b> east past Fairy Tale Girl Corinne, push the boulder into place, then go north and northeast to the Pokémon Ranger, who heals you. Then head south.</li></ol>" },
       { id: "p14-rival", ref: "14#Grove_3", type: "boss", loc: "Victory Road", title: "Grove 3: Serena/Calem's last battle",
         boss: { who: RIVAL, rival: true, team: [["Meowstic", 57, "Psychic"], ["$reevee", 57], ["Altaria", 58, "Dragon/Flying"], ["Absol", 59, "Dark"], ["$race", 61]],
           use: "Bug for Meowstic and Absol, Ice (4×) or Fairy for Altaria.", reward: "2 Max Revives" } },
       { id: "p14-end", ref: "14#Cave_3", type: "story", loc: "Victory Road", title: "Cave 3, Grove 4 and Cave 4 to the Pokémon League",
-        text: "From the rival spot, go east into Cave 3 and out its east exit. In Grove 4, cross the bridge to the pier and Surf into the last cave, then climb the final stairway." },
+        text: "<ol><li><b>Cave 3:</b> east and up the stairway to Ranger Petra. Jump the ledge east, then the ledges south. Keep going east and up the stairway past Ranger Ralf and Veteran Inga. Climb the two stairways to Veteran Gerard and take the <b>east</b> exit. (The other exits only lead to items and a shortcut.)</li>" +
+          "<li><b>Grove 4:</b> cross the bridge, follow the path to the pier and Surf into the last cave. Skip the waterfall unless you want TM02 Dragon Claw.</li>" +
+          "<li><b>Cave 4:</b> cross the pool and follow the uphill tunnel past three Veterans, then climb the final stairway to the Pokémon League.</li></ol>" },
     ],
   },
 

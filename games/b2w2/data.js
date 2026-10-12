@@ -391,6 +391,7 @@ const CHAPTERS = [
         boss: { who: "Ingo & Emmet (multi)", team: [["Gurdurr", 26, "Fighting"], ["Boldore", 26, "Rock"]],
           use: "Psychic or Flying for Gurdurr. Water, Grass, or Fighting for Boldore.", reward: "Vs. Recorder" } },
       { id: "p6-gym", ref: "6#Amusement_Park", type: "boss", loc: "Nimbasa City", title: "Nimbasa Gym (east of the Ferris wheel): Elesa",
+        text: "It's one long runway. Walk north up the catwalk: each section lights up as you reach a Trainer. Beat the three Trainers on the way, and Elesa is on the stage at the far end.",
         boss: { who: "Gym Leader Elesa", team: [["Emolga", 28, "Electric/Flying"], ["Flaaffy", 28, "Electric"], ["Zebstrika", 30, "Electric", "Sitrus Berry"]],
           use: "<b>Ground</b> for Flaaffy and Zebstrika. Emolga is immune to Ground, so use Rock or Ice on it. Sandile and Sandshrew are immune to her Electric moves.", reward: "Bolt Badge + TM72 Volt Switch" } },
       { id: "p6-plasma", ref: "6#Hugh_and_Team_Plasma_face_off", type: "boss", loc: "Nimbasa City", title: "Help Hugh against Team Plasma outside Big Stadium",
@@ -422,7 +423,11 @@ const CHAPTERS = [
       { id: "p7-tutor", ref: "7#Move_Tutor", type: "tip", loc: "Driftveil City", title: "Move Tutor (pays in Red Shards): Ice Punch or Seed Bomb",
         text: "He's in the house next to the Chateau Hotel. Both moves are good against Clay." },
       { id: "p7-gym", ref: "7#Driftveil_Gym", type: "boss", loc: "Driftveil City", title: "Driftveil Gym: Clay",
-        text: "Ride the conveyor belts through the dark mine to Clay in the northeast.",
+        text: "A dark mine of platforms joined by conveyor belts. Each platform lights up once you land on it, and the yellow panels give you a look around. You only need to beat two Workers. Direct route:" +
+          "<ol><li>Ride the lift down one floor and go up the steps (Clyde gives you Fresh Water). Then go down the steps to the west and north to the first belt.</li>" +
+          "<li>Ride it north and beat the Worker there. Take the belt <b>east</b>, then <b>south</b>, then <b>east</b> again to the second Worker.</li>" +
+          "<li>From there: the long <b>pink belt north</b> → the normal belts north → one <b>east</b> → a long belt <b>south</b> → one <b>east</b> → the last long belt <b>north</b> lands on Clay's orange platform.</li></ol>" +
+          "Long (pink) belts pass under a platform and drop you on the one beyond it.",
         boss: { who: "Gym Leader Clay", team: [["Krokorok", 31, "Ground/Dark"], ["Sandslash", 31, "Ground"], ["Excadrill", 33, "Ground/Steel", "Sitrus Berry"]],
           use: "<b>Water</b> hits all three. Grass works on Krokorok and Sandslash, and Fighting on Krokorok and Excadrill. Bulldoze lowers your Speed.", reward: "Quake Badge + TM78 Bulldoze" } },
       { id: "p7-pwt", ref: "7#Driftveil_Gym", type: "story", loc: "Pokémon World Tournament", title: "Follow Hugh south to the Pokémon World Tournament", text: "" },
@@ -494,7 +499,13 @@ const CHAPTERS = [
       { id: "p10-twist", ref: "10#Twist_Mountain", type: "tip", loc: "Twist Mountain", title: "Twist Mountain is blocked, so skip it",
         text: "Marshal blocks the entrance at the northeast end of Route 7. There's nothing to do here yet." },
       { id: "p10-gym", ref: "10#Mistralton_Gym", type: "boss", loc: "Mistralton City", title: "Mistralton Gym: Skyla",
-        text: "The turbines blow you back to the entrance. Move while the wind is off and duck behind the walls when it starts.",
+        text: "The turbines at the back blow you toward the entrance. The green floor behind each wall is safe, so run from one green patch to the next while the wind is weak, and wait there when it picks up." +
+          "<ol><li>Go down the ramp, then run northeast to the first Pilot. Shelter in front of the wall behind him.</li>" +
+          "<li>Run north to the next safe patch, then south and west into the one after. Head southwest. If the wind pushes you to the back-left wall, the second Pilot is there.</li>" +
+          "<li>From there run north, then east, then west and north through the safe patches. Follow the snaking path east, then go north again.</li>" +
+          "<li>Run north, then west, to the safe patch to the north. Take the <b>third thin path from the top</b> east as far as you can.</li>" +
+          "<li>Go north along the thin path to the <b>red floor</b>. The wind can't reach you there, so follow it around to Skyla.</li></ol>" +
+          "You only have to battle the Pilots who block your path.",
         boss: { who: "Gym Leader Skyla", team: [["Swoobat", 37, "Psychic/Flying"], ["Skarmory", 37, "Steel/Flying"], ["Swanna", 39, "Water/Flying", "Sitrus Berry"]],
           use: "Electric hits all three (4× on Swanna). Rock also works on Swoobat and Swanna. Use Fire or Electric on Skarmory.", reward: "Jet Badge + TM62 Acrobatics" } },
       { id: "p10-cargo", ref: "10#Mistralton_Cargo_Service_2", type: "story", loc: "Mistralton City", title: "Go to the Cargo Service building and talk to Skyla",
@@ -614,7 +625,7 @@ const CHAPTERS = [
       { id: "p14-board", ref: "14#Route_21_(east)", type: "story", loc: "Route 21", title: "Board the Plasma Frigate with Hugh",
         text: "Marlon lowers the gangplank. Beat a Grunt at the top, then follow Hugh in through the North Entrance. Inside, the two of you tag-battle two Grunts." },
       { id: "p14-barrier", ref: "14#{B1FB2|B1FW2}", type: "story", loc: "Route 21", title: "Shut off the electric barrier on B1F",
-        text: "{<b>Black 2: four switches.</b> The warp panels in the six rooms around the stairwell take you back to switches in the North Entrance. Find and flip all four, then take the teleporter.|<b>White 2: password.</b> Get the <b>Plasma Card</b> from the female Grunt in the dining hall (west/southwest room). Talk to Grunts to collect the 5 clues; the password is different every playthrough. Enter it at the barrier, then take the teleporter.}<br>The bed in the {northeast|east} room heals your party." },
+        text: "{<b>Black 2: four switches.</b> Take the <b>north</b> stairway down to B1F. Each of the six rooms around the stairwell has a warp panel, and four of them drop you into a small switch room in the North Entrance. Try every room, flip each switch you reach, and head back down. Once all four are on, the barrier drops, so take the teleporter.|<b>White 2: password.</b> Take the <b>south</b> stairway down to B1F. Get the <b>Plasma Card</b> from the female Grunt in the dining hall (west/southwest room). Beat the Grunts in the side rooms for clues. The Weezing Grunt in the northwest room gives you the first letter or number. Enter the password at the barrier, then take the teleporter.<br><b>The password is random but always one of these:</b> <b>Reshiram</b>, <b>Zekrom</b>, <b>Kyurem</b> (capitals don't matter), or a 4-digit code with the same digit three times and 0 third: <b>1101, 2202, 3303, 4404, 5505, 6606, 7707, 8808, 9909</b>. So you only need the Grunt who tells you the <b>first letter or number</b>: R/Z/K gives the Pokémon, and a digit <i>n</i> gives <i>nn0n</i>.}<br>The bed in the {northeast|east} room heals your party." },
       { id: "p14-command", ref: "14#Command_Center", type: "boss", loc: "Route 21", title: "Command Center: Zinzolin + Grunt (tag battle with Hugh)",
         text: "Zinzolin shows off Kyurem, which is powering the ship.",
         boss: { who: "Zinzolin & Grunt (multi)", team: [["Cryogonal", 48, "Ice"], ["Cryogonal", 48, "Ice"], ["Weavile", 50, "Dark/Ice"], ["Liepard", 45, "Dark"], ["Watchog", 45, "Normal"], ["Scolipede", 45, "Bug/Poison"]],
@@ -626,7 +637,7 @@ const CHAPTERS = [
         boss: null },
       { id: "p14-frigate", ref: "14#Plasma_Frigate_2", type: "story", loc: "Giant Chasm", title: "Frigate, round 2: South Entrance → B2F",
         text: "Beat the two Grunts in the South Entrance, then take the teleporter. On B2F, Rood's spy explains the room." +
-          "{<br><b>Black 2: password.</b> Get the Plasma Card from the female Grunt on the north side of the pipe maze, collect the 5 clues, and enter the password.|<br><b>White 2: switches.</b> Use the pipe switches to move through the maze. The warp panels on the floor below lead to the 4 red switches.}" },
+          "{<br><b>Black 2: password.</b> Get the Plasma Card from the female Grunt on the north side of the pipe maze. Beat Grunts for clues until one tells you the first letter or number, then enter the password at the console north of where you warped in.<br><b>The password is random but always one of these:</b> <b>Reshiram</b>, <b>Zekrom</b>, <b>Kyurem</b> (capitals don't matter), or a 4-digit code with the same digit three times and 0 third: <b>1101, 2202, 3303, 4404, 5505, 6606, 7707, 8808, 9909</b>. So you only need the Grunt who tells you the <b>first letter or number</b>: R/Z/K gives the Pokémon, and a digit <i>n</i> gives <i>nn0n</i>.|<br><b>White 2: switches.</b> Use the pipe switches to move through the maze. The warp panels on the floor below lead to the 4 red switches.}" },
       { id: "p14-zinzolin", ref: "14#Plasma_Frigate_2", type: "boss", loc: "Giant Chasm", title: "Zinzolin (last time) in front of Kyurem's cage",
         boss: { who: "Zinzolin", team: [["Cryogonal", 49, "Ice"], ["Cryogonal", 49, "Ice"], ["Weavile", 51, "Dark/Ice"]],
           use: "Same plan as before: Fire and Fighting.", reward: "" },
@@ -659,12 +670,32 @@ const CHAPTERS = [
       { id: "p15-heal", ref: "15#East_side", type: "heal", loc: "Route 23", title: "The Ace Trainer in the house north of the cave exit heals you",
         text: "Handy right after Ghetsis." },
       { id: "p15-route23", ref: "15#West_side", type: "story", loc: "Route 23", title: "Route 23: head north to Victory Road",
-        text: "Follow the river valley north to the big stairway, then head <b>west</b> through the forest. Chop trees and push boulders to get through. Then go north to Victory Road.",
+        text: "Follow the river valley north to the big stairway, climb it, and head <b>west</b> into the forest." +
+          "<ol><li>Past Ranger Lena, Cut the tree and reach the raised platform to the southwest. Push its boulder <b>south</b> into the hole. Go west to Hiker Doug, Cut the tree, and push the second boulder south too.</li>" +
+          "<li>Wander west through the forest to Black Belt Benjamin. Beating him clears his path. Take it, Cut the tree, go south, and jump a ledge east.</li>" +
+          "<li><b>Strength puzzle</b> (boulders are numbered in the order you meet them): Push the 3rd one space left. Surf across and push the 4th into the hole. Jump the ledge and push that boulder all the way north. Push the 5th (northeast) one space right. Then push the 3rd two spaces right and one up into the hole. Finally, push the 2nd east, the 5th south and the 6th east.</li>" +
+          "<li>Climb the stairway, come back down, and go north. Jump the ledge and keep going north to Victory Road.</li></ol>",
         callout: "<b>Azelf</b> shows up post-game on the platform near the Strength puzzle in this west forest." },
       { id: "p15-n", ref: "15#Entrance", mapPin: [32.5, 18.0], mapLabel: "Entrance & Pokémon Center", type: "story", loc: "Victory Road", map: "victory-road", title: "N gives you HM05 Waterfall at the entrance",
         text: "Pass the Badge Check Gate. There's a Pokémon Center to the northeast. Bring Pokémon that know <b>Cut, Surf, Strength, Waterfall, and Flash</b>." },
-      { id: "p15-vr", ref: "15#{Pokémon_Black_2|Pokémon_White_2}", mapPin: [76.6, 64.3], mapLabel: "Exit to the Pokémon League", type: "story", loc: "Victory Road", map: "victory-road", title: "Climb Victory Road (follow the map)",
-        text: "The route is different in each version, so use the map. Both versions go: Cave 1F → River Valley → Cave 2F → Mountainside → Cave 2F Back (use <b>Flash</b>) → Mountainside → Cave 3F → outside → north path." +
+      { id: "p15-vr", ref: "15#{Pokémon_Black_2|Pokémon_White_2}", mapPin: [76.6, 64.3], mapLabel: "Exit to the Pokémon League", type: "story", loc: "Victory Road", map: "victory-road", title: "Climb Victory Road",
+        text: "The route is different in each version." +
+          "{<ol><li><b>Cave 1F:</b> north past Ace Trainer Billy, push the boulder into the hole, then north and west to Psychic Alia. Go north out to the River Valley.</li>" +
+          "<li><b>River Valley:</b> north through the grass to the water. Surf under the bridge, climb the stairway and go north into the next cave.</li>" +
+          "<li><b>Cave 2F:</b> west past two Ace Trainers to a junction. Take the <b>north</b> side: push the boulder you can reach into place, then go east past Ranger Eddie and out.</li>" +
+          "<li><b>Mountainside:</b> climb the stairway and the cliff to the top. Take the <b>west</b> branch all the way west and down the mountainside into Cave 2F.</li>" +
+          "<li><b>Cave 2F:</b> past Ranger Elle, go east and push the boulder into place, then north into <b>Cave 2F Back</b>. Use <b>Flash</b>, go north, then east to a pool, then north back outside.</li>" +
+          "<li><b>Mountainside:</b> take the <b>eastern</b> stairway into Cave 3F.</li>" +
+          "<li><b>Cave 3F:</b> south, down the stairway near Veteran Hugo. Jump the ledge and go outside.</li></ol>" +
+          "|<ol><li><b>Cave 1F:</b> north, then west over the bridge past Ace Trainer Jamie. Push the boulder into the hole and go north to the Grove.</li>" +
+          "<li><b>Grove:</b> north to the River Valley.</li>" +
+          "<li><b>River Valley:</b> cross the bridge past Veteran Cathy. Doctor Logan heals you after you beat him. Go into the cave.</li>" +
+          "<li><b>Cave 2F:</b> east past two Ace Trainers to a junction. Take the <b>north</b> side: push the boulder you can reach into place, then go west past Ranger Ellie and out.</li>" +
+          "<li><b>Mountainside:</b> climb the stairway past Ace Trainer Elmer and the cliff to the top. Take the <b>east</b> branch all the way east and down the mountainside into Cave 2F.</li>" +
+          "<li><b>Cave 2F:</b> past Ranger Eddie, go west and push the boulder into place, then north into <b>Cave 2F Back</b>. Use <b>Flash</b>, go north, then east to a pool, then north back outside.</li>" +
+          "<li><b>Mountainside:</b> take the <b>eastern</b> stairway into Cave 3F.</li>" +
+          "<li><b>Cave 3F:</b> south, down the stairway near Veteran Hugo. Jump the ledge and go outside.</li></ol>}" +
+          "Outside, go north past Veterans Portia and Sterling into the final tunnel." +
           "<br>A <b>Zoroark</b> guards a cave entrance on the east side. Leave it alone for now; it leads to N's Castle post-game." },
       { id: "p15-hugh", ref: "15#Northern_path", type: "boss", loc: "Victory Road", title: "Rival battle: Hugh in the final tunnel",
         text: "Past Veterans Portia and Sterling. He gives you <b>TM24 Thunderbolt</b> afterward.",
@@ -721,7 +752,7 @@ const CHAPTERS = [
         tactic: "Fire or Fighting first, then weaker neutral moves to whittle it down.",
         callout: "{<b>White 2 only:</b> needs the Iceberg Key from a White 2 game (or trade for Regice).|Native to White 2.} Regigigas needs <b>all three</b> Regis." },
       { id: "pg-regigigas", ref: "17#Twist_Mountain", mapPin: [36.1, 82.0], mapLabel: "Regigigas", type: "legend", legend: "regigigas", loc: "Twist Mountain", map: "twist-mountain", title: "Regigigas: Twist Mountain hidden chamber (Lv68)",
-        text: "Exit the ruins west, push the boulder, and go north into <b>Twist Mountain B1F</b>. North of the icy rock, move the boulders: <b>west one right, middle one down, east one left</b>. With <b>Regirock, Regice, and Registeel in your party</b>, check the \"statue\" and it wakes up.",
+        text: "Exit the ruins west, push the boulder, and go north into <b>Twist Mountain B1F</b>. Go north through the hole in the wall past the big icy rock. In the new chamber, move the boulders: <b>west one right, middle one down, east one left</b>. With <b>Regirock, Regice, and Registeel in your party</b>, check the \"statue\" and it wakes up.",
         tactic: "Slow Start halves its Attack and Speed for the first 5 turns, so catch it then. Fighting does the most damage. Use Dusk Balls." },
     ],
   },
@@ -776,7 +807,7 @@ const CHAPTERS = [
       { id: "pg-route18", ref: "21#Route_18", mapPin: [33.6, 44.3], mapLabel: "Magma Stone", type: "key", loc: "Route 18", map: "route-17-18-p2-lab", title: "Get the Magma Stone on Route 18",
         text: "Route 2 → Accumula Town → <b>Route 1</b> → Surf west through <b>Route 17</b> → <b>Route 18</b>. Climb the stairs, go down into the valley, then up the northeast stairway (Crasher Wake is there). Cross the next bridge to get the <b>Magma Stone</b>." },
       { id: "pg-heatran", ref: "22#Reversal_Mountain", mapPin: { b2: [66.6, 28.7], w2: [65.6, 73.5] }, mapLabel: "Heatran's chamber", type: "legend", legend: "heatran", loc: "Reversal Mountain", map: "reversal-mountain", title: "Heatran: Reversal Mountain B1F (Lv68)",
-        text: "Fly to Lentimas Town and go into Reversal Mountain. Find <b>Doctor Derek</b> and take the stairway near him down to Heatran's chamber on B1F. <b>Save</b>, use the Magma Stone, then talk to Heatran.",
+        text: "Fly to Lentimas Town and go into Reversal Mountain. Go through the Lentimas chamber into the main chamber and head east. Heatran's chamber is down the <b>stairway Bianca wanted to check</b> during the story (Doctor Derek is near it), east of where the path from the mountainside comes back in. <b>Save</b>, use the Magma Stone, then talk to Heatran.",
         tactic: "Paralyze it first. Hit it with neutral moves and keep a Water type in to take its Fire and Steel hits. Ground is 4×, so don't KO it by accident. Use Dusk Balls." },
       { id: "pg-done", ref: "22#Pokémon_League:_Round_2", type: "story", loc: "Pokémon League", title: "That's every legendary you can catch in your version.",
         text: "Optional extras: Elite Four rematches (Lv72–78), the Nature Preserve shiny Haxorus (Unova Dex completion → Permit), and more." },
