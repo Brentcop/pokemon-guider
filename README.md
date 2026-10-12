@@ -23,7 +23,7 @@ Personal guides that keep only the main story and the legendaries, without optio
 - **Moving maps:** drag with the left, right or middle mouse button. Double-click zooms in (Shift+double-click zooms out). The mouse wheel zooms (it won't grab the wheel while you're scrolling the page past a map). The + / − / ⌖ (back to the pin) / ⤢ (full screen) buttons are in the corner. Full screen: wheel or pinch to zoom, arrow keys to move, + / − to zoom, 0 to fit, P to go back to the pin.
 - **Types** (or press T): type any Pokémon's name, or pick one or two types, to see what it's weak to, what it resists, and what its own-type moves hit. The **Type chart** tab has the full chart. Both use the game's generation, so B2W2 has no Fairy type and uses Gen 5 typings. Clicking a Pokémon in a battle or a legendary's name opens its matchups.
 - **Offline:** after you open the guide once with internet, it works without a connection. Maps are saved as you view them; **View → Sync → Save all maps for offline** saves every map now (about 25 MB, or about 80 MB more with full-size maps). The Sync item shows **Offline** while you're disconnected (and the View button gets a dot); progress is still saved on the device and syncs when you're back. A download mark next to Sync means every map is saved.
-- **View menu** (top right): **Show extras** reveals optional tips, **Hide done** hides finished steps completely, **Dark mode** switches every guide (and the home page) between the dark and light looks, plus **Sync** and **Keyboard shortcuts**. Dark mode is saved on the device (not synced); until you use it, each version keeps its own look (Black 2 and X dark, White 2 and Y light).
+- **View menu** (top right): **Show extras** reveals optional tips, **Hide done** hides finished steps completely, **Dark mode** switches every guide (and the home page) between the dark and light looks, **Reading font** picks the body text font (Standard, Lexend, Atkinson Hyperlegible or OpenDyslexic; saved on the device for every guide), plus **Sync** and **Keyboard shortcuts**. Dark mode is saved on the device (not synced); until you use it, each version keeps its own look (Black 2 and X dark, White 2 and Y light).
 - **Bulbapedia** buttons open that exact section. Each part's header has a **More on Bulbapedia** list covering all the side content, items and full text.
 - **Parts collapse:** tap the arrow on a part header. Checking off a whole part folds it up automatically.
 - **Keyboard (desktop):** J/K move between steps, X checks one off, N jumps to the next unchecked step, [ / ] change parts, C collapses, M opens the map, B opens Bulbapedia. Press ? for the full list.
@@ -34,6 +34,7 @@ Personal guides that keep only the main story and the legendaries, without optio
 index.html              game picker (reads games/registry.js)
 guide.html              shared guide page, loads games/<id>/data.js + js/app.js
 js/app.js               shared renderer (no game-specific code)
+js/readfont.js          the Reading font choice (View menu), applied before the page draws
 js/icons.js             the SVG icon set (one <symbol> per icon; icon("map") returns the markup)
 js/md5.js               builds Bulbapedia image-archive links from file names
 tools/audit-maps.js     checks a game's maps: steps without one, broken images
@@ -43,6 +44,7 @@ assets/pokedex.js       every Pokémon's types, incl. older-generation typings (
 assets/types.js         type colors + type chart per generation
 js/typetool.js          the ⚔ Types panel
 sw.js                   offline support (service worker): saves the site, maps and sprites on the device
+assets/fonts/           OpenDyslexic (SIL Open Font License); Lexend and Atkinson Hyperlegible come from Google Fonts
 assets/sprites/gen5/    sprites by dex number (<dex>.gif animated, <dex>.png still fallback)
 assets/sprites/gen6/    X & Y sprites (<dex>.gif animated, <dex>.png still)
 assets/sprites/cover/   cover legendaries for the home page's planned games

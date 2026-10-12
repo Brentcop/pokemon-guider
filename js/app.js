@@ -759,6 +759,13 @@
   $("#extras").onchange = (e) => { S.extras = e.target.checked; save(); renderAll(); };
   $("#hideDone").onchange = (e) => { S.hideDone = e.target.checked; save(); renderAll(); };
   $("#darkMode").onchange = (e) => { try { localStorage.setItem("pg.dark", e.target.checked ? "1" : "0"); } catch {} applyTheme(); };
+  // Reading font (js/readfont.js): saved on this device for every guide ("pg.font").
+  if (window.readFont) {
+    const rf = $("#readFont");
+    rf.innerHTML = Object.entries(readFont.FONTS).map(([id, f]) => `<option value="${id}">${f.label}</option>`).join("");
+    rf.value = readFont.get();
+    rf.onchange = (e) => readFont.set(e.target.value);
+  } else $("#readFont").closest(".menu-item").hidden = true;
   $("#regionBtn").onclick = () => openLightbox(regionSrc(true), `${G.regionName || "Region"} · ${verLabel()}`, null, regionSrc());
   // Where you left off: the first unchecked step after the last one you checked
   // (skipped steps further back don't pull you away from where you are).

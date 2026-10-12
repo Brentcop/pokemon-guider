@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Route Guide</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=20">
+<link rel="stylesheet" href="css/style.css?v=21">
+<script src="js/readfont.js?v=21"></script>
 </head>
 <body data-mode="dark">
 <header class="topbar">
@@ -31,6 +32,7 @@
         <label class="menu-item tog"><input type="checkbox" id="extras"> <span>Show extras<small>Optional tips</small></span></label>
         <label class="menu-item tog"><input type="checkbox" id="hideDone"> <span>Hide done<small>Hide finished steps completely</small></span></label>
         <label class="menu-item tog"><input type="checkbox" id="darkMode"> <span>Dark mode<small>Saved on this device, for every guide</small></span></label>
+        <label class="menu-item font-pick"><span class="aa" aria-hidden="true">Aa</span><span>Reading font<small>Saved on this device, for every guide</small></span><select id="readFont"></select></label>
         <div class="menu-sep"></div>
         <button class="menu-item sync-btn" id="syncBtn" data-state="off" role="menuitem"><svg class="ic"><use href="#i-cloud"/></svg><span class="lbl">Sync</span><span class="dot"></span><small class="menu-sub">Cloud sync, backup &amp; offline</small></button>
         <button class="menu-item kbd-btn" id="kbdBtn" role="menuitem"><svg class="ic"><use href="#i-keyboard"/></svg><span>Keyboard shortcuts</span><kbd>?</kbd></button>
@@ -143,11 +145,11 @@
 
 <footer class="foot" id="foot"></footer>
 
-<script src="js/icons.js?v=20"></script>
-<script src="games/registry.js?v=20"></script>
-<script src="assets/dex.js?v=20"></script>
-<script src="assets/pokedex.js?v=20"></script>
-<script src="assets/types.js?v=20"></script>
+<script src="js/icons.js?v=21"></script>
+<script src="games/registry.js?v=21"></script>
+<script src="assets/dex.js?v=21"></script>
+<script src="assets/pokedex.js?v=21"></script>
+<script src="assets/types.js?v=21"></script>
 <script>
   // Load the requested game module, then the shared renderer.
   (() => {
@@ -156,7 +158,7 @@
     const entry = GAMES.find((g) => g.id === id && (g.status === "ready" || q.has("preview")));
     if (!entry) { location.replace("index.html"); return; }
     // Bump BUILD on every release so browsers (and GitHub Pages' cache) fetch fresh files.
-    const BUILD = "20";
+    const BUILD = "21";
     const load = (src) => new Promise((ok, fail) => {
       const s = document.createElement("script"); s.src = `${src}?v=${BUILD}`; s.onload = ok; s.onerror = fail; document.body.appendChild(s);
     });
