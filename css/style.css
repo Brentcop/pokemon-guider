@@ -753,24 +753,25 @@ kbd {
   .tracker.open { transform: none; }
   body.drawer-open { overflow: hidden; }
 }
-@media (max-width: 1100px) { #regionBtn .bl, #typesBtn .bl, .menu-btn .bl { display: none; } }
+@media (max-width: 1100px) { #regionBtn .bl, #typesBtn .bl, #pokedexBtn .bl, .menu-btn .bl { display: none; } }
 @media (max-width: 900px) {
   .legend-card { grid-template-columns: minmax(0, 1fr); }
   .lc-stage { height: 190px; }
 }
 @media (max-width: 760px) {
-  /* Two rows: brand + Dex + menu, then the version, starter and tools. */
-  .topbar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 8px; padding: 8px 12px; }
+  /* Two rows: brand + region map + Dex + menu, then the version, starter, Pokédex and Types. */
+  .topbar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto auto; gap: 8px; padding: 8px 12px; }
   .controls { display: contents; }
   .brand { grid-column: 1 / 3; grid-row: 1; overflow: hidden; }
-  .dex-btn { grid-column: 3; grid-row: 1; justify-self: end; }
+  .dex-btn { grid-column: 4; grid-row: 1; justify-self: end; }
   .dex-btn .bl { display: none; }
-  .menu-wrap { grid-column: 4; grid-row: 1; justify-self: end; }
+  .menu-wrap { grid-column: 5; grid-row: 1; justify-self: end; }
   .seg { grid-column: 1; grid-row: 2; }
-  .sel { grid-column: 2; grid-row: 2; justify-self: start; min-width: 0; }
+  .sel { grid-column: 2 / 4; grid-row: 2; justify-self: start; min-width: 0; }
   .sel select { max-width: 100%; }
-  #regionBtn { grid-column: 3; grid-row: 2; justify-self: end; }
-  #typesBtn { grid-column: 4; grid-row: 2; justify-self: end; }
+  #regionBtn { grid-column: 3; grid-row: 1; justify-self: end; }
+  #pokedexBtn { grid-column: 4; grid-row: 2; justify-self: end; }
+  #typesBtn { grid-column: 5; grid-row: 2; justify-self: end; }
   #starterLabel { display: none; }
   .seg button { padding: 5px 9px; font-size: 12.5px; }
   .brand h1 { font-size: 10px; }
@@ -883,3 +884,75 @@ a.hub-card:hover { transform: translateY(-2px); border-color: var(--accent); }
 /* OpenDyslexic runs wide and tall: step it down a touch so lines keep their length. */
 :root[data-font="dyslexic"] .s-body { font-size: 13.5px; line-height: 1.75; }
 :root[data-font="dyslexic"] .s-title { font-size: 14.5px; }
+
+/* ---------- Pokédex panel (js/pokedex.js) ---------- */
+.pokedex-dlg { width: min(780px, calc(100vw - 24px)); }
+.pd-ver { display: flex; align-items: center; gap: 6px; margin-left: auto; font-size: 12px; color: var(--muted); font-weight: 700; }
+.pd-ver select {
+  padding: 5px 8px; border-radius: var(--r-sm); font: 600 13px var(--font);
+  color: var(--text); background: var(--panel-2); border: 1px solid var(--line);
+}
+.pd-search { position: sticky; top: 52px; z-index: 2; background: var(--panel); padding: 12px 0 8px; }
+.pd-search input {
+  width: 100%; padding: 10px 12px; font: inherit; font-size: 15px; border-radius: var(--r-sm);
+  border: 2px solid var(--frame); background: var(--panel-3); color: var(--text);
+}
+.pd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-top: 4px; }
+.pd-card {
+  display: grid; grid-template-columns: 48px 1fr; grid-template-rows: auto auto; align-items: center; gap: 0 6px;
+  padding: 6px 8px; text-align: left; cursor: pointer; color: var(--text);
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r-sm); font: inherit;
+}
+.pd-card:hover, .pd-card:focus-visible { border-color: var(--accent); }
+.pd-card img { grid-row: 1 / 3; width: 48px; height: 48px; object-fit: contain; image-rendering: pixelated; }
+.pd-cn { display: flex; align-items: baseline; gap: 5px; min-width: 0; }
+.pd-cn b { font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pd-cn small { color: var(--muted); font-size: 11px; }
+.pd-ct { display: flex; gap: 3px; flex-wrap: wrap; }
+.pd-ct .ty { font-size: 9px; padding: 1px 5px; }
+.pd-more { margin: 12px auto 0; display: block; }
+.pd-back { margin: 14px 0 4px; }
+.pd-back .ic { transform: rotate(90deg); }
+.pd-head { margin-top: 6px; }
+.pd-head .pd-big { width: 96px; height: 96px; object-fit: contain; image-rendering: pixelated; }
+body[data-skin="kalos"] .pd-head .pd-big { image-rendering: auto; }
+.pd-jump { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 8px; font-size: 12.5px; }
+.pd-jump a { color: var(--accent); font-weight: 600; text-decoration: none; }
+.pd-jump a:hover { text-decoration: underline; }
+.pd-sec { border-top: 1px solid var(--line); margin-top: 14px; padding-top: 10px; scroll-margin-top: 60px; }
+.pd-sec h3 { margin: 0 0 8px; font-size: 15px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pd-types-btn { margin-left: auto; font-size: 12px; padding: 4px 9px; }
+.pd-none { color: var(--muted); font-size: 13.5px; margin: 4px 0; }
+.pd-link { font: inherit; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; font-weight: 700; text-decoration: underline; }
+
+/* evolution tree: stages left to right, branches (e.g. Eevee) stacked */
+.pd-evo { overflow-x: auto; padding-bottom: 4px; }
+.pd-stage { display: flex; align-items: center; gap: 6px; }
+.pd-kids { display: flex; flex-direction: column; gap: 6px; }
+.pd-branch { display: flex; align-items: center; gap: 6px; }
+.pd-how { max-width: 170px; font-size: 12px; color: var(--muted); line-height: 1.35; display: flex; align-items: center; gap: 6px; }
+.pd-arrow { font-size: 18px; color: var(--accent); font-weight: 800; }
+.pd-evo-mon {
+  display: flex; flex-direction: column; align-items: center; gap: 0; min-width: 76px; padding: 4px 6px 6px; cursor: pointer;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r-sm); color: var(--text); font: 600 12.5px var(--font);
+}
+.pd-evo-mon img { width: 56px; height: 56px; object-fit: contain; image-rendering: pixelated; }
+.pd-evo-mon.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+
+/* moves + locations tables */
+.pd-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.pd-table th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); padding: 4px 6px; border-bottom: 2px solid var(--line); }
+.pd-table td { padding: 5px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.pd-table .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pd-table th.num { text-align: right; }
+.pd-table .ty { font-size: 9.5px; padding: 1px 6px; }
+.pd-table small { display: block; color: var(--muted); font-size: 11.5px; }
+.pd-loc tr:not(.pd-first) td { border-top: 0; }
+.pd-loc tr.pd-first td { border-top: 1px solid var(--line); }
+.pd-loc td:first-child { font-weight: 700; }
+.pd-cls { font-size: 10.5px; font-weight: 800; padding: 1px 6px; border-radius: 3px; color: #fff; }
+.pd-cls.pd-ph { background: #c4442c; } .pd-cls.pd-sp { background: #3a64b8; } .pd-cls.pd-st { background: #7a7f8c; }
+@media (max-width: 560px) {
+  .pd-moves th:nth-child(4), .pd-moves td:nth-child(4), .pd-moves th:nth-child(7), .pd-moves td:nth-child(7) { display: none; }
+  .pd-ver span { display: none; }
+}

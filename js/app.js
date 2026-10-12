@@ -159,7 +159,7 @@
     if (item === "-") item = "";
     name = V(name); types = V(types);
     const first = name.split(" / ")[0];
-    return `<div class="mon" data-mon="${esc(first)}" title="Matchups for ${esc(name)}">
+    return `<div class="mon" data-mon="${esc(first)}" title="Pokédex: ${esc(name)}">
       <div class="mon-spr">${spriteImg(first)}</div>
       <span class="mn">${esc(name)}</span><span class="ml">Lv ${lvl}</span>${typePills(types)}
       ${item ? `<span class="mi">@ ${esc(item)}</span>` : ""}</div>`;
@@ -185,7 +185,7 @@
     return `<div class="legend-card ${caught ? "is-caught" : ""}" style="--aura:${t1};--aura-2:${t2}">
       <div class="lc-stage">${spriteImg(l.name, l.name)}${caught ? `<span class="stamp">${I("check")}Caught</span>` : ""}</div>
       <div class="lc-info">
-        <div class="lc-name"><button type="button" class="ln" data-mon="${esc(l.name)}" title="Matchups for ${esc(l.name)}">${l.name}</button><span class="lv">Lv${l.lvl}</span></div>
+        <div class="lc-name"><button type="button" class="ln" data-mon="${esc(l.name)}" title="Pokédex: ${esc(l.name)}">${l.name}</button><span class="lv">Lv${l.lvl}</span></div>
         ${typePills(l.types.join("/"))}
         <div class="row"><b>Hit with</b> ${l.hit}</div>
         ${l.avoid ? `<div class="row"><b>Avoid</b> ${l.avoid}</div>` : ""}
@@ -718,7 +718,7 @@
     const t = e.target.closest("[data-step],[data-catch],[data-map],[data-mini],[data-xref],[data-goto],[data-ver],[data-part],[data-collapse],[data-drawer],[data-mon],[data-run]");
     if (!t) return;
     if (t.dataset.run) { toggleRun(t); return; }
-    if (t.dataset.mon) { window.TypeTool?.open(t.dataset.mon); return; }
+    if (t.dataset.mon) { (window.Pokedex || window.TypeTool)?.open(t.dataset.mon); return; }
     if (t.dataset.collapse) { toggleCollapse(t.dataset.collapse); return; }
     if (t.dataset.drawer) { setDrawer(false); return; }
     if (t.dataset.ver) { S.ver = t.dataset.ver; save(); renderAll(); return; }
@@ -871,6 +871,7 @@
       case "d": setDrawer(!$("#tracker").classList.contains("open")); break;
       case "r": $("#regionBtn").click(); break;
       case "t": window.TypeTool?.open(); break;
+      case "p": window.Pokedex?.open(); break;
       default: return;
     }
     e.preventDefault();

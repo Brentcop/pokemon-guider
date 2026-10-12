@@ -1,27 +1,22 @@
-/* Types panel: look up a Pokémon's (or a type combo's) matchups, and the full type chart.
-   Uses the game's `gen` so B2W2 gets the Gen 5 chart and Gen 5 typings. Open with
-   TypeTool.open(name?) — the ⚔ Types button, the T key, or clicking a Pokémon in a battle. */
+/* Types panel: pick one or two types to see their matchups, plus the full type chart.
+   Uses the game's `gen` so B2W2 gets the Gen 5 chart. Open with TypeTool.open(types?) (the ⚔ Types
+   button or the T key). Looking up a Pokémon by name is the Pokédex panel's job (js/pokedex.js);
+   TypeTool.matchups(types, gen) is the matchup block both panels show. */
 window.TypeTool = (() => {
   "use strict";
   const G = window.GAME, gen = G.gen || 9;
-  const C = Types.chart(gen), MONS = Types.dex(gen);
-  const byName = new Map(MONS.map((m) => [m.name.toLowerCase(), m]));
+  const C = Types.chart(gen);
   const $ = (s, r = document) => r.querySelector(s);
-  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const pill = (t, btn) => `<${btn ? `button type="button" data-tt-type="${t}"` : "span"} class="ty" style="background:${TYPE_COLORS[t]}">${t}</${btn ? "button" : "span"}>`;
-  const local = typeof DEX !== "undefined" ? DEX : {};
-  const spriteFor = (m) => (local[m.name] ? `${G.sprites}/${local[m.name]}.png`
-    : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${m.dex}.png`);
   const fmt = (x) => ({ 4: "4×", 2: "2×", 1: "1×", 0.5: "½×", 0.25: "¼×", 0: "0×" }[x] ?? x + "×");
 
   const dlg = $("#typesDlg");
   let picked = []; // the 1–2 types being shown
 
   // ---------- matchup view ----------
-  function render(mon) {
-    const types = mon ? mon.types : picked;
-    const out = $("#ttResult");
-    if (!types.length) { out.innerHTML = `<p class="tt-empty">Type a Pokémon's name, or pick one or two types.</p>`; return; }
+  // The matchup block for a type combo under generation g's chart (shared with the Pokédex panel).
+  function matchups(types, g = gen) {
+    const C = Types.chart(g);
     // Defence: what each attacking type does to it.
     const groups = {};
     for (const a of C.types) (groups[C.vs(a, types)] ||= []).push(a);
@@ -31,12 +26,7 @@ window.TypeTool = (() => {
     // Offence: types its own-type (STAB) moves hit for 2× or better.
     const hits = C.types.filter((d) => types.some((a) => C.eff(a, d) >= 2));
     const walls = C.types.filter((d) => types.every((a) => C.eff(a, d) < 1));
-    out.innerHTML = `
-      <div class="tt-head">
-        ${mon ? `<img src="${spriteFor(mon)}" alt="" onerror="this.remove()">` : ""}
-        <div><div class="tt-name">${mon ? `${esc(mon.name)} <small>#${mon.dex}</small>` : "Type combo"}</div>
-        <div class="types">${types.map((t) => pill(t)).join("")}</div></div>
-      </div>
+    return `
       <h4>Attacks against it</h4>
       ${row(4, "super weak")}${row(2, "weak")}${row(0.5, "resists")}${row(0.25, "resists a lot")}${row(0, "immune")}
       <h4>Its ${types.join("/")} moves</h4>
@@ -45,15 +35,21 @@ window.TypeTool = (() => {
       <p class="tt-note">Abilities can change this (e.g. Levitate ignores Ground, Flash Fire absorbs Fire).</p>`;
   }
 
+  function render() {
+    const out = $("#ttResult");
+    if (!picked.length) { out.innerHTML = `<p class="tt-empty">Pick one or two types. To look up a Pokémon, use the <b>Pokédex</b> (P).</p>`; return; }
+    out.innerHTML = `<div class="tt-head"><div><div class="tt-name">${picked.join(" / ")}</div>
+      <div class="types">${picked.map((t) => pill(t)).join("")}</div></div></div>${matchups(picked)}`;
+  }
+
   function pickers() {
     $("#ttPick").innerHTML = C.types.map((t) => pill(t, true)).join("");
     for (const b of dlg.querySelectorAll("[data-tt-type]")) b.classList.toggle("on", picked.includes(b.dataset.ttType));
   }
 
-  function show(name) {
-    const m = name && byName.get(String(name).toLowerCase());
-    if (m) { picked = []; $("#ttSearch").value = m.name; }
-    pickers(); render(m || null);
+  function show(types) {
+    if (Array.isArray(types) && types.length) picked = types.filter((t) => C.types.includes(t)).slice(0, 2);
+    pickers(); render();
   }
 
   // ---------- full chart ----------
@@ -97,17 +93,6 @@ window.TypeTool = (() => {
     $("#ttLookup").hidden = name !== "lookup"; $("#ttChart").hidden = name !== "chart";
     if (name === "chart" && !$("#ttChart").firstChild) renderChart();
   }
-  $("#ttList").innerHTML = MONS.map((m) => `<option value="${esc(m.name)}">`).join("");
-  $("#ttSearch").addEventListener("input", (e) => {
-    const m = byName.get(e.target.value.trim().toLowerCase());
-    if (m) { picked = []; pickers(); render(m); }
-  });
-  $("#ttSearch").addEventListener("keydown", (e) => {
-    if (e.key !== "Enter") return;
-    const q = e.target.value.trim().toLowerCase();
-    const m = byName.get(q) || MONS.find((x) => x.name.toLowerCase().startsWith(q));
-    if (m) show(m.name);
-  });
   dlg.addEventListener("click", (e) => {
     if (e.target === dlg) return dlg.close();
     const t = e.target.closest("[data-tt-type]"), tb = e.target.closest("[data-tt-tab]");
@@ -115,16 +100,19 @@ window.TypeTool = (() => {
     if (t && t.closest("#ttPick")) {
       const x = t.dataset.ttType;
       picked = picked.includes(x) ? picked.filter((p) => p !== x) : [...picked, x].slice(-2);
-      $("#ttSearch").value = ""; pickers(); render(null);
+      pickers(); render();
     }
   });
   $("#ttClose").onclick = () => dlg.close();
   $("#typesBtn").onclick = () => open();
 
-  function open(name) {
-    tab("lookup"); show(name);
-    if (!dlg.open) dlg.showModal();
-    if (!name) $("#ttSearch").select();
+  // open(["Water", "Ground"]) shows that combo; a Pokémon's name opens its Pokédex entry instead.
+  function open(arg) {
+    if (typeof arg === "string" && window.Pokedex) { window.Pokedex.open(arg); return; }
+    tab("lookup"); show(arg);
+    if (dlg.open) dlg.close();
+    window.Pokedex?.close();
+    dlg.showModal();
   }
-  return { open };
+  return { open, matchups, close: () => dlg.open && dlg.close() };
 })();

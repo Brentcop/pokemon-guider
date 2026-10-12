@@ -4,6 +4,8 @@
 
    status: "ready"   → has a data.js and shows up as playable
            "planned" → listed as "coming soon", no link
+   dex:    [versionId, label] pairs for the Pokédex panel's game picker; needs assets/dexdata/<id>.js
+           (run tools/build-dexdata.py after adding the game there)
    art:    cover legendaries for the home page (local sprite files, so offline works); planned
            games show them as silhouettes
 
@@ -13,6 +15,7 @@
 window.GAMES = [
   {
     id: "b2w2", status: "ready", gen: 5, region: "Unova",
+    dex: [["b2", "Black 2"], ["w2", "White 2"]], // Pokédex panel versions (assets/dexdata/b2w2.js, from tools/build-dexdata.py)
     title: "Black 2 & White 2",
     blurb: "Full story (Parts 1–15), then every catchable legendary.",
     colors: ["#1b1f27", "#33c3f0", "#e8462f"],
@@ -20,6 +23,7 @@ window.GAMES = [
   },
   {
     id: "xy", status: "ready", gen: 6, region: "Kalos",
+    dex: [["x", "X"], ["y", "Y"]],
     title: "X & Y", playing: "Y",
     blurb: "Full story (Parts 1–15), then every catchable legendary.",
     colors: ["#1c3a6e", "#2f6fd6", "#d6334a"],
